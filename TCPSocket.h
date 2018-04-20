@@ -48,7 +48,6 @@ private:
     int socket_;
     SocketState state_;
     SocketError error_;
-    bool closed_;
 
     void setState(SocketState state);
     void setError(SocketError error);

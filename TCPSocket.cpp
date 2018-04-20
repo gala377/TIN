@@ -7,7 +7,6 @@
 TCPSocket::TCPSocket() {
     socket_ = socket(AF_INET6, SOCK_STREAM, 0);
     state_ = SocketState::UNCONNECTED;
-    closed_ = false;
     if(socket_ == -1)
         throw SocketInitializationException();
     fcntl(socket_, F_SETFL, fcntl(socket_, F_GETFL, 0) | O_NONBLOCK);
@@ -15,8 +14,7 @@ TCPSocket::TCPSocket() {
 
 TCPSocket::TCPSocket(int socket, SocketState state ) :
     socket_(socket),
-    state_(state),
-    closed_(false) {
+    state_(state) {
 }
 
 TCPSocket::~TCPSocket() {
@@ -26,32 +24,27 @@ TCPSocket::~TCPSocket() {
 TCPSocket::TCPSocket(TCPSocket&& other) {
     socket_ = other.socket_;
     state_ = other.state_;
-    closed_ = other.closed_;
-    other.socket_ = 0;
-    other.closed_ = true;
+    other.socket_ = -1;
 }
 
 TCPSocket& TCPSocket::operator=(TCPSocket&& other) {
     close();
     socket_ = other.socket_;
     state_ = other.state_;
-    closed_ = other.closed_;
-    other.socket_ = 0;
-    other.closed_ = true;
+    other.socket_ = -1;
 
     return *this;
 }
 
 void TCPSocket::close() {
-    if(!closed_) {
+    if(socket_ >= 0) {
         int status = ::close(socket_);
         if (status == -1) {
             std::cout << strerror(errno) << "\n";
             return;
         }
         std::cout << "Close " << socket_ << "\n";
-        closed_ = true;
-        socket_ = 0;
+        socket_ = -1;
     }
 }
 
