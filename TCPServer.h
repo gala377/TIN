@@ -35,7 +35,6 @@ public:
     bool listen(DNS address, uint16_t server_port);
 
     std::shared_ptr<TCPSocket> accept();
-    //TCPSocket accept(); //TODO optional!
     uint16_t port() const;
 private:
     int socket_;
