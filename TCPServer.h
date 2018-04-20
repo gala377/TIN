@@ -34,6 +34,8 @@ public:
     bool listen(IP address, uint16_t server_port);
     bool listen(DNS address, uint16_t server_port);
 
+    bool waitForConnection(int ms);
+
     std::shared_ptr<TCPSocket> accept();
     uint16_t port() const;
 private:

@@ -147,3 +147,26 @@ uint16_t TCPServer::port() const {
 void TCPServer::setError(SocketError error) {
     error_ = error;
 }
+
+bool TCPServer::waitForConnection(int ms) {
+    fd_set set;
+    FD_ZERO(&set);
+    FD_SET(socket_, &set);
+    struct timeval timeout;
+    timeout.tv_sec = ms / 1000;
+    timeout.tv_usec = (ms % 1000) * 1000;
+    std::cout << "Started\n";
+    int status = select(socket_+1, &set, NULL, NULL, &timeout);
+    std::cout << "Ended\n";
+    if(status == -1) {
+        std::cout << "Select error: " << strerror(errno) << "\n";
+    }
+    else if(status == 0) {
+        return false;
+    }
+    else {
+        if(FD_ISSET(socket_, &set)) {
+            return true;
+        }
+    }
+}
