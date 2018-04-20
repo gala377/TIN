@@ -35,12 +35,12 @@ public:
     struct sockaddr_in6 address() const;
     uint16_t port() const;
 
-    unsigned int write(char* buffer, unsigned int size);
-    unsigned int write(std::string buffer);
+    int write(char* buffer, unsigned int size);
+    int write(std::string buffer);
 
-    unsigned int read(char* buffer, unsigned int size);
+    int read(char* buffer, unsigned int size);
 
-    unsigned int availableBytes() const;
+    int availableBytes() const;
 
     SocketError getError() const;
     SocketState getState() const;

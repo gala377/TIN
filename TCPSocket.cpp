@@ -121,13 +121,13 @@ uint16_t TCPSocket::port() const {
     return ntohs(temp.sin6_port);
 }
 
-unsigned int TCPSocket::write(std::string buffer) {
+int TCPSocket::write(std::string buffer) {
     if(buffer.size() == 0)
         return 0;
     return write(&buffer.front(), buffer.size());
 }
 
-unsigned int TCPSocket::write(char* buffer, unsigned int size) {
+int TCPSocket::write(char* buffer, unsigned int size) {
     if(size == 0)
         return 0;
     int status = ::write(socket_, buffer, size);
@@ -146,7 +146,7 @@ unsigned int TCPSocket::write(char* buffer, unsigned int size) {
     return status;
 }
 
-unsigned int TCPSocket::read(char* buffer, unsigned int size) {
+int TCPSocket::read(char* buffer, unsigned int size) {
     int status = ::read(socket_, buffer, size);
     if(status == -1) {
         switch (errno) {
@@ -174,7 +174,7 @@ unsigned int TCPSocket::read(char* buffer, unsigned int size) {
     return status;
 }
 
-unsigned int TCPSocket::availableBytes() const {
+int TCPSocket::availableBytes() const {
     unsigned int count = 0;
     if(ioctl(socket_,  FIONREAD, &count) == -1)
         std::cout << strerror(errno) << "\n";
