@@ -55,7 +55,7 @@ void TCPSocket::close() {
     }
 }
 
-void TCPSocket::connect(in6_addr address, uint16_t port) {
+bool TCPSocket::connect(in6_addr address, uint16_t port) {
     struct sockaddr_in6 server = createAddress(address, port);
     if(::connect(socket_, (struct sockaddr*) &server, sizeof(server)) == -1) {
         std::cout << strerror(errno) << "\n";
@@ -102,17 +102,18 @@ void TCPSocket::connect(in6_addr address, uint16_t port) {
                 setState(SocketState::UNCONNECTED);
                 break;
         }
-        return;
+        return false;
     }
     setState(SocketState::CONNECTED);
+    return true;
 }
 
-void TCPSocket::connect(IP address, uint16_t port) {
-    connect(ip(address), port);
+bool TCPSocket::connect(IP address, uint16_t port) {
+    return connect(ip(address), port);
 }
 
-void TCPSocket::connect(DNS address, uint16_t port) {
-    connect(ip(address), port);
+bool TCPSocket::connect(DNS address, uint16_t port) {
+    return connect(ip(address), port);
 }
 
 uint16_t TCPSocket::port() const {

@@ -28,9 +28,9 @@ public:
 
     void close();
 
-    void connect(in6_addr address, uint16_t port);
-    void connect(IP address, uint16_t port);
-    void connect(DNS address, uint16_t port);
+    bool connect(in6_addr address, uint16_t port);
+    bool connect(IP address, uint16_t port);
+    bool connect(DNS address, uint16_t port);
 
     struct sockaddr_in6 address() const;
     uint16_t port() const;
