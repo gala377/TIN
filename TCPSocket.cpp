@@ -199,3 +199,7 @@ SocketError TCPSocket::getError() const {
 SocketState TCPSocket::getState() const {
     return state_;
 }
+
+int TCPSocket::getDescriptor() const {
+    return socket_;
+}

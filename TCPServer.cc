@@ -170,3 +170,7 @@ bool TCPServer::waitForConnection(int ms) {
         }
     }
 }
+
+int TCPServer::getDescriptor() const {
+    return socket_;
+}

@@ -38,6 +38,8 @@ public:
 
     std::shared_ptr<TCPSocket> accept();
     uint16_t port() const;
+
+    int getDescriptor() const;
 private:
     int socket_;
     bool closed_;

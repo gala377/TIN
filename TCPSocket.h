@@ -44,6 +44,8 @@ public:
 
     SocketError getError() const;
     SocketState getState() const;
+
+    int getDescriptor() const;
 private:
     int socket_;
     SocketState state_;
