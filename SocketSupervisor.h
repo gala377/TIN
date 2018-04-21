@@ -6,6 +6,7 @@
 #define TIN_SOCKETSUPERVISOR_H
 
 #include <algorithm>
+#include <thread>
 #include <unordered_map>
 #include "TCPServer.h"
 #include "TCPSocket.h"
@@ -25,6 +26,7 @@ public:
     void stop();
 private:
     void update();
+    void loop();
 
     int pipe_input_;
     int pipe_output_;
