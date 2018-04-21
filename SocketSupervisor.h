@@ -11,6 +11,8 @@
 
 class SocketSupervisor {
 public:
+    SocketSupervisor();
+    ~SocketSupervisor();
     void add(TCPSocket* socket);
     void add(TCPServer* server);
     void remove(TCPSocket* socket);
