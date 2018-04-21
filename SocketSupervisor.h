@@ -5,6 +5,7 @@
 #ifndef TIN_SOCKETSUPERVISOR_H
 #define TIN_SOCKETSUPERVISOR_H
 
+#include <algorithm>
 #include <unordered_map>
 #include "TCPServer.h"
 #include "TCPSocket.h"
@@ -21,6 +22,7 @@ public:
     void remove(TCPServer* server);
 
     void run();
+    void stop();
 private:
     int pipe_input_;
     int pipe_output_;
