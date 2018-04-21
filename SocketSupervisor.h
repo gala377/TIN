@@ -13,13 +13,18 @@ class SocketSupervisor {
 public:
     SocketSupervisor();
     ~SocketSupervisor();
+
     void add(TCPSocket* socket);
     void add(TCPServer* server);
+
     void remove(TCPSocket* socket);
     void remove(TCPServer* server);
+
+    void run();
 private:
     int pipe_input_;
     int pipe_output_;
+
     std::unordered_map<int, TCPSocket*> sockets_;
     std::unordered_map<int, TCPServer*> servers_;
 };
