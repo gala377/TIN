@@ -5,6 +5,7 @@
 #ifndef TIN_SOCKETSUPERVISOR_H
 #define TIN_SOCKETSUPERVISOR_H
 
+#include <unordered_map>
 #include "TCPServer.h"
 #include "TCPSocket.h"
 
@@ -14,6 +15,11 @@ public:
     void add(TCPServer* server);
     void remove(TCPSocket* socket);
     void remove(TCPServer* server);
+private:
+    int pipe_input_;
+    int pipe_output_;
+    std::unordered_map<int, TCPSocket*> sockets_;
+    std::unordered_map<int, TCPServer*> servers_;
 };
 
 
