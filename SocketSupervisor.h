@@ -31,6 +31,8 @@ private:
     int pipe_input_;
     int pipe_output_;
 
+    bool running_;
+
     std::unordered_map<int, TCPSocket*> sockets_;
     std::unordered_map<int, TCPServer*> servers_;
 };
