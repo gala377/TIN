@@ -24,6 +24,8 @@ public:
     void run();
     void stop();
 private:
+    void update();
+
     int pipe_input_;
     int pipe_output_;
 
