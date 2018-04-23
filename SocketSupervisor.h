@@ -23,13 +23,13 @@ public:
     void remove(TCPSocket* socket);
     void remove(TCPServer* server);
 
-    void run();
-    void stop();
 
     static void sigioHandle(int signum);
 private:
     void update();
     void loop();
+
+    void stop();
 
     void checkSockets();
 

@@ -23,9 +23,9 @@ SocketSupervisor::SocketSupervisor() {
 }
 
 SocketSupervisor::~SocketSupervisor() {
+    stop();
     close(pipe_input_);
     close(pipe_output_);
-    stop();
     delete thread;
 }
 
@@ -36,7 +36,9 @@ void SocketSupervisor::update() {
 
 void SocketSupervisor::add(TCPSocket* socket) {
     sockets_.insert(std::make_pair(socket->getDescriptor(), socket));
-    update();
+    ioctl(socket->getDescriptor(), SIOCSPGRP, &process_pid_);
+    int on = 1;
+    ioctl(socket->getDescriptor(), FIOASYNC, &on);
 }
 
 void SocketSupervisor::add(TCPServer* server) {
@@ -44,67 +46,30 @@ void SocketSupervisor::add(TCPServer* server) {
     ioctl(server->getDescriptor(), SIOCSPGRP, &process_pid_);
     int on = 1;
     ioctl(server->getDescriptor(), FIOASYNC, &on);
-    update();
 }
 
 void SocketSupervisor::remove(TCPSocket* socket) {
     sockets_.erase(socket->getDescriptor());
-    update();
+    //update();
+    //TODO remove signal
 }
 
 void SocketSupervisor::remove(TCPServer* server) {
     servers_.erase(server->getDescriptor());
-    update();
-}
-
-void SocketSupervisor::run() {
-
+    //update();
+    //TODO remove signal
 }
 
 void SocketSupervisor::loop() {
     while(running_) {
-        int biggest_descriptor = 0;
         fd_set set;
         FD_ZERO(&set);
-        std::for_each(sockets_.begin(), sockets_.end(), [&](auto socket) {
-            if(socket.first >= 0) {
-                if(socket.first > biggest_descriptor)
-                    biggest_descriptor = socket.first;
-                FD_SET(socket.first, &set);
-            }
-        });
-        std::for_each(servers_.begin(), servers_.end(), [&](auto server) {
-            if(server.first >= 0) {
-                if(server.first > biggest_descriptor)
-                    biggest_descriptor = server.first;
-                FD_SET(server.first, &set);
-            }
-        });
-        if(pipe_output_ > biggest_descriptor)
-            biggest_descriptor = pipe_output_;
         FD_SET(pipe_output_, &set);
-        //select(biggest_descriptor+1, &set, NULL, NULL, NULL);
-//TODO error handling
-        std::for_each(sockets_.begin(), sockets_.end(), [&](auto socket) {
-            if(socket.first >= 0) {
-                if(FD_ISSET(socket.first, &set)) {
-                    //std::cout << "Incoming data\n";
-//TODO
-                }
-            }
-        });
-        std::for_each(servers_.begin(), servers_.end(), [&](auto server) {
-            if(server.first >= 0) {
-                if(FD_ISSET(server.first, &set)) {
-                    //std::cout << "Incoming connection\n";
-//TODO
-                }
-            }
-        });
-        if(FD_ISSET(pipe_output_, &set)) {
+        select(pipe_output_ + 1, &set, NULL, NULL, NULL);
+        if (FD_ISSET(pipe_output_, &set)) {
             char character;
-            while(true) {
-                if(read(pipe_output_, &character, 1) == -1) {
+            while (true) {
+                if (read(pipe_output_, &character, 1) == -1) {
                     break;
                 }
             }
@@ -138,8 +103,6 @@ void SocketSupervisor::checkSockets() {
             FD_SET(server.first, &set);
         }
     });
-    if(pipe_output_ > biggest_descriptor)
-        biggest_descriptor = pipe_output_;
     struct timeval timeout;
     timeout.tv_sec = 0;
     timeout.tv_usec = 0;
