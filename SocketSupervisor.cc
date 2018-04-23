@@ -112,6 +112,7 @@ void SocketSupervisor::checkSockets() {
         if(socket.first >= 0) {
             if(FD_ISSET(socket.first, &set)) {
                 std::cout << "Incoming data\n";
+                socket.second->readyRead();
 //TODO
             }
         }
@@ -120,6 +121,7 @@ void SocketSupervisor::checkSockets() {
         if(server.first >= 0) {
             if(FD_ISSET(server.first, &set)) {
                 std::cout << "Incoming connection\n";
+                server.second->incomingConnection();
 //TODO
             }
         }
