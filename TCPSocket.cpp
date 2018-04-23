@@ -43,7 +43,7 @@ void TCPSocket::close() {
             std::cout << strerror(errno) << "\n";
             return;
         }
-        std::cout << "Close " << socket_ << "\n";
+        //std::cout << "Close " << socket_ << "\n";
         socket_ = -1;
     }
 }
