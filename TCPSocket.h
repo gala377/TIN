@@ -12,6 +12,7 @@
 #include <unistd.h>
 #include <memory.h>
 #include <sys/ioctl.h>
+#include <boost/signals2.hpp>
 
 #include "TCPSocketBase.h"
 
@@ -46,6 +47,8 @@ public:
     SocketState getState() const;
 
     int getDescriptor() const;
+
+    boost::signals2::signal<void ()> readyRead;
 private:
     int socket_;
     SocketState state_;
@@ -53,6 +56,7 @@ private:
 
     void setState(SocketState state);
     void setError(SocketError error);
+
 };
 
 

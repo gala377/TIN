@@ -13,6 +13,7 @@
 #include <memory.h>
 #include <sys/ioctl.h>
 #include <memory>
+#include <boost/signals2.hpp>
 
 #include "TCPSocket.h"
 
@@ -40,6 +41,8 @@ public:
     uint16_t port() const;
 
     int getDescriptor() const;
+
+    boost::signals2::signal<void ()> incomingConnection;
 private:
     int socket_;
     bool closed_;
