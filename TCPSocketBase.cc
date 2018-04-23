@@ -11,6 +11,7 @@ in6_addr ip(const IP &address) {
 }
 
 in6_addr ip(const DNS &address) {
+    //TODO
     return in6addr_any;
 }
 
