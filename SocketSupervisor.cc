@@ -111,7 +111,6 @@ void SocketSupervisor::checkSockets() {
     std::for_each(sockets_.begin(), sockets_.end(), [&](auto socket) {
         if(socket.first >= 0) {
             if(FD_ISSET(socket.first, &set)) {
-                std::cout << "Incoming data\n";
                 socket.second->readyRead();
 //TODO
             }
@@ -120,7 +119,6 @@ void SocketSupervisor::checkSockets() {
     std::for_each(servers_.begin(), servers_.end(), [&](auto server) {
         if(server.first >= 0) {
             if(FD_ISSET(server.first, &set)) {
-                std::cout << "Incoming connection\n";
                 server.second->incomingConnection();
 //TODO
             }
