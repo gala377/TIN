@@ -32,7 +32,6 @@ SocketSupervisor::~SocketSupervisor() {
 void SocketSupervisor::update() {
     const char character = ' ';
     write(pipe_input_, &character, 1);
-    std::cout << "Update\n";
 }
 
 void SocketSupervisor::add(TCPSocket* socket) {
