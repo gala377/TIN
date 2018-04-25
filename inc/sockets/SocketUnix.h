@@ -22,6 +22,8 @@ public:
     virtual int setFlags(int fd, int flags);
     virtual int availableBytes(int fd);
     virtual uint16_t port(int fd);
+    virtual void setAsyncIO(int fd, pid_t process_pid);
+    virtual void disableAsyncIO(int fd);
 };
 
 

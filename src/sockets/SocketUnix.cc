@@ -57,6 +57,17 @@ int SocketUnix::availableBytes(int fd) {
 uint16_t SocketUnix::port(int fd) {
     struct sockaddr_in6 address;
     socklen_t length = sizeof(address);
-    getsockname(fd, (struct sockaddr*) &address, &length);
+    getsockname(fd, (struct sockaddr *) &address, &length);
     return ntohs(address.sin6_port);
+}
+
+void SocketUnix::setAsyncIO(int fd, pid_t process_pid) {
+    ioctl(fd, SIOCSPGRP, &process_pid);
+    int on = 1;
+    ioctl(fd, FIOASYNC, &on);
+}
+
+void SocketUnix::disableAsyncIO(int fd) {
+    int on = 0;
+    ioctl(fd, FIOASYNC, &on);
 }
