@@ -2,7 +2,7 @@
 // Created by gajus123 on 18.04.18.
 //
 
-#include "TCPSocketBase.h"
+#include "../../inc/sockets/TCPSocketBase.h"
 
 in6_addr ip(const IP &address) {
     in6_addr result;

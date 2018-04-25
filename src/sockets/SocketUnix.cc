@@ -2,7 +2,7 @@
 // Created by gajus123 on 25.04.18.
 //
 
-#include "SocketUnix.h"
+#include "../../inc/sockets/SocketUnix.h"
 
 int SocketUnix::select(int nfds, fd_set *readfds, fd_set *writefds, fd_set *exceptfds, struct timeval *timeout) {
     return ::select(nfds, readfds, writefds, exceptfds, timeout);

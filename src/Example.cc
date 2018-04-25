@@ -4,14 +4,14 @@
 
 #include <iostream>
 #include <future>
-#include "TCPSocket.h"
-#include "TCPServer.h"
-#include "SocketSupervisor.h"
-#include "SocketUnix.h"
+#include "../inc/sockets/TCPSocket.h"
+#include "../inc/sockets/TCPServer.h"
+#include "../inc/sockets/SocketSupervisor.h"
+#include "../inc/sockets/SocketUnix.h"
 
 int main() {
     SocketUnix unixSocket;
-    uint16_t port = 56003;
+    uint16_t port = 56004;
     TCPServer server(&unixSocket);
     std::shared_ptr<TCPSocket> socket1;
     TCPSocket socket2(&unixSocket);

@@ -2,8 +2,7 @@
 // Created by gajus123 on 17.04.18.
 //
 
-#include <c++/5/bits/c++config.h>
-#include "TCPServer.h"
+#include "../../inc/sockets/TCPServer.h"
 
 TCPServer::TCPServer(SocketFacade* socket_interface) :
     socket_interface_(socket_interface) {
