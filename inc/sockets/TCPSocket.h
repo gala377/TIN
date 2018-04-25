@@ -49,6 +49,7 @@ public:
     int getDescriptor() const;
 
     boost::signals2::signal<void ()> readyRead;
+    boost::signals2::signal<void ()> connected;
 private:
     SocketFacade* socket_interface_;
 
