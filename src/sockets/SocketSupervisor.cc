@@ -51,14 +51,14 @@ void SocketSupervisor::add(TCPServer* server) {
 
 void SocketSupervisor::remove(TCPSocket* socket) {
     sockets_.erase(socket->getDescriptor());
-    //update();
-    //TODO remove signal
+    int on = 0;
+    ioctl(socket->getDescriptor(), FIOASYNC, &on);
 }
 
 void SocketSupervisor::remove(TCPServer* server) {
     servers_.erase(server->getDescriptor());
-    //update();
-    //TODO remove signal
+    int on = 0;
+    ioctl(server->getDescriptor(), FIOASYNC, &on);
 }
 
 void SocketSupervisor::loop() {
