@@ -156,9 +156,7 @@ bool TCPServer::waitForConnection(int ms) {
     struct timeval timeout;
     timeout.tv_sec = ms / 1000;
     timeout.tv_usec = (ms % 1000) * 1000;
-    //std::cout << "Started\n";
     int status = socket_interface_->select(socket_+1, &set, NULL, NULL, &timeout);
-    //std::cout << "Ended\n";
     if(status == -1) {
         std::cout << "Select error: " << strerror(errno) << "\n";
     }
