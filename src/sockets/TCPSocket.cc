@@ -112,8 +112,9 @@ bool TCPSocket::connect(DNS address, uint16_t port) {
 }
 
 uint16_t TCPSocket::port() const {
-    struct sockaddr_in6 temp = address();
-    return ntohs(temp.sin6_port);
+    /*struct sockaddr_in6 temp = address();
+    return ntohs(temp.sin6_port);*/
+    return socket_interface_->port(socket_);
 }
 
 int TCPSocket::write(std::string buffer) {
