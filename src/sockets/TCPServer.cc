@@ -137,7 +137,7 @@ std::shared_ptr<TCPSocket> TCPServer::accept() {
 }
 
 uint16_t TCPServer::port() const {
-    socket_interface_->port(socket_);
+    return socket_interface_->port(socket_);
 }
 
 void TCPServer::setError(SocketError error) {
