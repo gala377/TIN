@@ -39,7 +39,6 @@ void SocketSupervisor::add(TCPSocket* socket) {
     ioctl(socket->getDescriptor(), SIOCSPGRP, &process_pid_);
     int on = 1;
     ioctl(socket->getDescriptor(), FIOASYNC, &on);
-    std::cout << "Added\n";
 }
 
 void SocketSupervisor::add(TCPServer* server) {
@@ -69,21 +68,17 @@ void SocketSupervisor::loop() {
         FD_ZERO(&write_set);
         if(!sockets_.empty()) {
             std::for_each(sockets_.begin(), sockets_.end(), [&](auto socket) {
-                if (socket.first > biggest_descriptor)
-                    biggest_descriptor = socket.first;
-                FD_SET(socket.first, &write_set);
-                //std::cout << "Add\n";
+                if(socket.second->getState() != SocketState::CONNECTED) {
+                    if (socket.first > biggest_descriptor)
+                        biggest_descriptor = socket.first;
+                    FD_SET(socket.first, &write_set);
+                }
             });
         }
         fd_set set;
         FD_ZERO(&set);
         FD_SET(pipe_output_, &set);
-        //if(!sockets_.empty())
-        if(select(biggest_descriptor + 1, &set, &write_set, NULL, NULL) == -1) {
-            //std::cout << "errno " << strerror(errno) << "\n";
-        }
-        //else
-        //    select(biggest_descriptor + 1, &set, NULL, NULL, NULL);
+        select(biggest_descriptor + 1, &set, &write_set, NULL, NULL);
         if (FD_ISSET(pipe_output_, &set)) {
             char character;
             while (true) {
@@ -95,11 +90,8 @@ void SocketSupervisor::loop() {
         if(!sockets_.empty()) {
             std::for_each(sockets_.begin(), sockets_.end(), [&](auto socket) {
                 if (FD_ISSET(socket.first, &write_set)) {
-                    if(!printed) {
-                        //std::cout << "1\n";
-                        printed = true;
-//TODO change to state checking
-                        socket.second->connected();
+                    if(socket.second->getState() == SocketState::CONNECTING) {
+                        socket.second->setConnected();
                     }
                 }
             });
