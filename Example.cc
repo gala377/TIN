@@ -7,12 +7,14 @@
 #include "TCPSocket.h"
 #include "TCPServer.h"
 #include "SocketSupervisor.h"
+#include "SocketUnix.h"
 
 int main() {
+    SocketUnix unixSocket;
     uint16_t port = 56003;
-    TCPServer server;
+    TCPServer server(&unixSocket);
     std::shared_ptr<TCPSocket> socket1;
-    TCPSocket socket2;
+    TCPSocket socket2(&unixSocket);
     char packet1[16];
     {
         uint32_t *temp = reinterpret_cast<uint32_t *>(&packet1[0]);
