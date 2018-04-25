@@ -81,7 +81,7 @@ void SocketSupervisor::loop() {
         FD_SET(pipe_output_, &set);
         //if(!sockets_.empty())
         if(select(biggest_descriptor + 1, &set, &write_set, NULL, NULL) == -1) {
-            std::cout << "errno " << strerror(errno) << "\n";
+            //std::cout << "errno " << strerror(errno) << "\n";
         }
         //else
         //    select(biggest_descriptor + 1, &set, NULL, NULL, NULL);
@@ -97,8 +97,10 @@ void SocketSupervisor::loop() {
             std::for_each(sockets_.begin(), sockets_.end(), [&](auto socket) {
                 if (FD_ISSET(socket.first, &write_set)) {
                     if(!printed) {
-                        std::cout << "1\n";
+                        //std::cout << "1\n";
                         printed = true;
+//TODO change to state checking
+                        socket.second->connected();
                     }
                 }
             });
