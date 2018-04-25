@@ -30,6 +30,7 @@ public:
     virtual ssize_t read(int fd, void *buf, size_t nbytes) = 0;
     virtual int setFlags(int fd, int flags) = 0;
     virtual int availableBytes(int fd) = 0;
+    virtual uint16_t port(int fd) = 0;
 };
 
 

@@ -53,3 +53,10 @@ int SocketUnix::availableBytes(int fd) {
     ioctl(fd,  FIONREAD, &count);
     return count;
 }
+
+uint16_t SocketUnix::port(int fd) {
+    struct sockaddr_in6 address;
+    socklen_t length = sizeof(address);
+    getsockname(fd, (struct sockaddr*) &address, &length);
+    return ntohs(address.sin6_port);
+}
