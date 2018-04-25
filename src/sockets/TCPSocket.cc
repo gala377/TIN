@@ -10,7 +10,6 @@ TCPSocket::TCPSocket(SocketFacade* socket_interface) :
     state_ = SocketState::UNCONNECTED;
     if(socket_ == -1)
         throw SocketInitializationException();
-    //fcntl(socket_, F_SETFL, fcntl(socket_, F_GETFL, 0) | O_NONBLOCK);
     socket_interface_->setFlags(socket_, O_NONBLOCK);
 }
 
@@ -112,8 +111,6 @@ bool TCPSocket::connect(DNS address, uint16_t port) {
 }
 
 uint16_t TCPSocket::port() const {
-    /*struct sockaddr_in6 temp = address();
-    return ntohs(temp.sin6_port);*/
     return socket_interface_->port(socket_);
 }
 
@@ -172,15 +169,6 @@ int TCPSocket::read(char* buffer, unsigned int size) {
 
 int TCPSocket::availableBytes() const {
     return socket_interface_->availableBytes(socket_);
-}
-
-struct sockaddr_in6 TCPSocket::address() const {
-    struct sockaddr_in6 address;
-    socklen_t length = sizeof(address);
-    if(getsockname(socket_, (struct sockaddr*) &address, &length) == -1) {
-//TODO error handling
-    }
-    return address;
 }
 
 void TCPSocket::setState(SocketState state) {

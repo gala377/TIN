@@ -34,7 +34,6 @@ public:
     bool connect(IP address, uint16_t port);
     bool connect(DNS address, uint16_t port);
 
-    struct sockaddr_in6 address() const;
     uint16_t port() const;
 
     int write(char* buffer, unsigned int size);
