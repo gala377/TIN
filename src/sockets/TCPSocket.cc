@@ -170,11 +170,7 @@ int TCPSocket::read(char* buffer, unsigned int size) {
 }
 
 int TCPSocket::availableBytes() const {
-    unsigned int count = 0;
-    if(ioctl(socket_,  FIONREAD, &count) == -1)
-        std::cout << strerror(socket_interface_->getErrno()) << "\n";
-//TODO error handling
-    return count;
+    return socket_interface_->availableBytes(socket_);
 }
 
 struct sockaddr_in6 TCPSocket::address() const {
