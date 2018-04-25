@@ -5,14 +5,16 @@
 #include <c++/5/bits/c++config.h>
 #include "TCPServer.h"
 
-TCPServer::TCPServer() {
+TCPServer::TCPServer(SocketFacade* socket_interface) :
+    socket_interface_(socket_interface) {
     socket_ = socket(AF_INET6, SOCK_STREAM, 0);
     closed_ = false;
     if(socket_ == -1)
         throw SocketInitializationException();
 }
 
-TCPServer::TCPServer(int socket) :
+TCPServer::TCPServer(SocketFacade* socket_interface, int socket) :
+    socket_interface_(socket_interface),
     socket_(socket),
     closed_(false) {
 }
@@ -132,7 +134,7 @@ std::shared_ptr<TCPSocket> TCPServer::accept() {
         }
         return nullptr;
     }
-    return std::make_shared<TCPSocket>(status);
+    return std::make_shared<TCPSocket>(socket_interface_, status);
 }
 
 uint16_t TCPServer::port() const {

@@ -19,8 +19,8 @@
 
 class TCPServer {
 public:
-    TCPServer();
-    TCPServer(int socket);
+    TCPServer(SocketFacade* socket_interface);
+    TCPServer(SocketFacade* socket_interface, int socket);
     TCPServer(TCPServer&) = delete;
     TCPServer(TCPServer&& other);
     TCPServer& operator=(TCPServer&) = delete;
@@ -44,6 +44,8 @@ public:
 
     boost::signals2::signal<void ()> incomingConnection;
 private:
+    SocketFacade* socket_interface_;
+
     int socket_;
     bool closed_;
     SocketError error_;
