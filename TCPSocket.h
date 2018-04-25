@@ -15,11 +15,12 @@
 #include <boost/signals2.hpp>
 
 #include "TCPSocketBase.h"
+#include "SocketFacade.h"
 
 class TCPSocket {
 public:
-    TCPSocket();
-    TCPSocket(int socket, SocketState state = SocketState::CONNECTED);
+    TCPSocket(SocketFacade* socket_interface);
+    TCPSocket(SocketFacade* socket_interface, int socket, SocketState state = SocketState::CONNECTED);
     TCPSocket(TCPSocket&) = delete;
     TCPSocket(TCPSocket&& other);
     TCPSocket& operator=(TCPSocket&) = delete;
@@ -50,6 +51,8 @@ public:
 
     boost::signals2::signal<void ()> readyRead;
 private:
+    SocketFacade* socket_interface_;
+
     int socket_;
     SocketState state_;
     SocketError error_;

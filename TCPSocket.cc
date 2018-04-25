@@ -4,15 +4,18 @@
 
 #include "TCPSocket.h"
 
-TCPSocket::TCPSocket() {
-    socket_ = socket(AF_INET6, SOCK_STREAM, 0);
+TCPSocket::TCPSocket(SocketFacade* socket_interface) :
+    socket_interface_(socket_interface) {
+    socket_ = socket_interface_->socket(AF_INET6, SOCK_STREAM, 0);
     state_ = SocketState::UNCONNECTED;
     if(socket_ == -1)
         throw SocketInitializationException();
-    fcntl(socket_, F_SETFL, fcntl(socket_, F_GETFL, 0) | O_NONBLOCK);
+    //fcntl(socket_, F_SETFL, fcntl(socket_, F_GETFL, 0) | O_NONBLOCK);
+    socket_interface_->setFlags(socket_, O_NONBLOCK);
 }
 
-TCPSocket::TCPSocket(int socket, SocketState state ) :
+TCPSocket::TCPSocket(SocketFacade* socket_interface, int socket, SocketState state ) :
+    socket_interface_(socket_interface),
     socket_(socket),
     state_(state) {
 }
@@ -38,21 +41,20 @@ TCPSocket& TCPSocket::operator=(TCPSocket&& other) {
 
 void TCPSocket::close() {
     if(socket_ >= 0) {
-        int status = ::close(socket_);
+        int status = socket_interface_->close(socket_);
         if (status == -1) {
-            std::cout << strerror(errno) << "\n";
+            std::cout << strerror(socket_interface_->getErrno()) << "\n";
             return;
         }
-        //std::cout << "Close " << socket_ << "\n";
         socket_ = -1;
     }
 }
 
 bool TCPSocket::connect(in6_addr address, uint16_t port) {
     struct sockaddr_in6 server = createAddress(address, port);
-    if(::connect(socket_, (struct sockaddr*) &server, sizeof(server)) == -1) {
-        std::cout << strerror(errno) << "\n";
-        switch(errno) {
+    if(socket_interface_->connect(socket_, (struct sockaddr*) &server, sizeof(server)) == -1) {
+        std::cout << strerror(socket_interface_->getErrno()) << "\n";
+        switch(socket_interface_->getErrno()) {
             case EISCONN:
                 setState(SocketState::CONNECTED);
                 break;
@@ -123,9 +125,9 @@ int TCPSocket::write(std::string buffer) {
 int TCPSocket::write(char* buffer, unsigned int size) {
     if(size == 0)
         return 0;
-    int status = ::write(socket_, buffer, size);
+    int status = socket_interface_->write(socket_, buffer, size);
     if(status == -1) {
-        switch(errno) {
+        switch(socket_interface_->getErrno()) {
             case EPIPE:
             case ECONNRESET:
                 setError(SocketError::HOST_CLOSED);
@@ -140,9 +142,9 @@ int TCPSocket::write(char* buffer, unsigned int size) {
 }
 
 int TCPSocket::read(char* buffer, unsigned int size) {
-    int status = ::read(socket_, buffer, size);
+    int status = socket_interface_->read(socket_, buffer, size);
     if(status == -1) {
-        switch (errno) {
+        switch (socket_interface_->getErrno()) {
             case EAGAIN: //non-blocking - no data - zwróć 0 bez żadnych błędów
                 status = 0;
                 std::cout << "No data\n";
@@ -170,7 +172,7 @@ int TCPSocket::read(char* buffer, unsigned int size) {
 int TCPSocket::availableBytes() const {
     unsigned int count = 0;
     if(ioctl(socket_,  FIONREAD, &count) == -1)
-        std::cout << strerror(errno) << "\n";
+        std::cout << strerror(socket_interface_->getErrno()) << "\n";
 //TODO error handling
     return count;
 }
