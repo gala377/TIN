@@ -6,7 +6,7 @@
 
 TCPServer::TCPServer(SocketFacade* socket_interface) :
     socket_interface_(socket_interface) {
-    socket_ = socket(AF_INET6, SOCK_STREAM, 0);
+    socket_ = socket_interface_->socket(AF_INET6, SOCK_STREAM, 0);
     closed_ = false;
     if(socket_ == -1)
         throw SocketInitializationException();
@@ -41,7 +41,7 @@ TCPServer& TCPServer::operator=(TCPServer&& other) {
 
 void TCPServer::close() {
     if(!closed_) {
-        if(::close(socket_) == -1) {
+        if(socket_interface_->close(socket_) == -1) {
 //TODO error handling
             std::cout << strerror(errno) << "\n";
             return;
@@ -54,9 +54,9 @@ void TCPServer::close() {
 
 bool TCPServer::listen(in6_addr address, uint16_t server_port) {
     struct sockaddr_in6 server = createAddress(address, server_port);
-    if(bind(socket_, (struct sockaddr*) &server, sizeof(server)) == -1) {
-        std::cout << strerror(errno) << "\n";
-        switch(errno) {
+    if(socket_interface_->bind(socket_, (struct sockaddr*) &server, sizeof(server)) == -1) {
+        std::cout << strerror(socket_interface_->getErrno()) << "\n";
+        switch(socket_interface_->getErrno()) {
             case EADDRINUSE:
                 setError(SocketError::ADDRESS_IN_USE);
                 break;
@@ -73,8 +73,8 @@ bool TCPServer::listen(in6_addr address, uint16_t server_port) {
         return false;
     }
 
-    if(::listen(socket_, 1) == -1) {
-        switch(errno) {
+    if(socket_interface_->listen(socket_, 1) == -1) {
+        switch(socket_interface_->getErrno()) {
             case EADDRINUSE:
                 setError(SocketError::ADDRESS_IN_USE);
                 break;
@@ -97,9 +97,9 @@ bool TCPServer::listen(DNS address, uint16_t server_port) {
 }
 
 std::shared_ptr<TCPSocket> TCPServer::accept() {
-    int status = ::accept(socket_, (struct sockaddr*) nullptr, (socklen_t*) nullptr);
+    int status = socket_interface_->accept(socket_, (struct sockaddr*) nullptr, (socklen_t*) nullptr);
     if(status == -1) {
-        std::cout << strerror(errno) << "\n";
+        std::cout << strerror(socket_interface_->getErrno()) << "\n";
         switch(errno) {
             case EBADF:
             case EOPNOTSUPP:
@@ -157,7 +157,7 @@ bool TCPServer::waitForConnection(int ms) {
     timeout.tv_sec = ms / 1000;
     timeout.tv_usec = (ms % 1000) * 1000;
     //std::cout << "Started\n";
-    int status = select(socket_+1, &set, NULL, NULL, &timeout);
+    int status = socket_interface_->select(socket_+1, &set, NULL, NULL, &timeout);
     //std::cout << "Ended\n";
     if(status == -1) {
         std::cout << "Select error: " << strerror(errno) << "\n";
