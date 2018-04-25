@@ -7,7 +7,7 @@
 
 #include "SocketFacade.h"
 
-class SocketUnix {
+class SocketUnix : public SocketFacade {
 public:
     virtual int select(int nfds, fd_set *readfds, fd_set *writefds, fd_set *exceptfds, struct timeval *timeout);
     virtual int accept(int s, struct sockaddr * restrict_addr, socklen_t * restrict_addrlen);
@@ -16,6 +16,9 @@ public:
     virtual int listen(int s, int backlog);
     virtual int close(int fd);
     virtual int getErrno();
+    virtual ssize_t write(int fd, const void *buf, size_t nbytes);
+    virtual ssize_t read(int fd, void *buf, size_t nbytes);
+    virtual int setFlags(int fd, int flags);
 };
 
 

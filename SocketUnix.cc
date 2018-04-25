@@ -31,3 +31,15 @@ int SocketUnix::close(int fd) {
 int SocketUnix::getErrno() {
     return errno;
 }
+
+ssize_t SocketUnix::write(int fd, const void *buf, size_t nbytes) {
+    return ::write(fd, buf, nbytes);
+}
+
+ssize_t SocketUnix::read(int fd, void *buf, size_t nbytes) {
+    return ::read(fd, buf, nbytes);
+}
+
+int SocketUnix::setFlags(int fd, int flags) {
+    fcntl(fd, F_SETFL, fcntl(fd, F_GETFL, 0) | flags);
+}
