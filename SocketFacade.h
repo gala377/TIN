@@ -25,6 +25,9 @@ public:
     virtual int listen(int s, int backlog) = 0;
     virtual int close(int fd) = 0;
     virtual int getErrno() = 0;
+    virtual ssize_t write(int fd, const void *buf, size_t nbytes) = 0;
+    virtual ssize_t read(int fd, void *buf, size_t nbytes) = 0;
+    virtual int setFlags(int fd, int flags) = 0;
 };
 
 
