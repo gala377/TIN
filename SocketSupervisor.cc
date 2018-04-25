@@ -32,6 +32,7 @@ SocketSupervisor::~SocketSupervisor() {
 void SocketSupervisor::update() {
     const char character = ' ';
     write(pipe_input_, &character, 1);
+    std::cout << "Update\n";
 }
 
 void SocketSupervisor::add(TCPSocket* socket) {
@@ -39,6 +40,7 @@ void SocketSupervisor::add(TCPSocket* socket) {
     ioctl(socket->getDescriptor(), SIOCSPGRP, &process_pid_);
     int on = 1;
     ioctl(socket->getDescriptor(), FIOASYNC, &on);
+    std::cout << "Added\n";
 }
 
 void SocketSupervisor::add(TCPServer* server) {
@@ -61,11 +63,28 @@ void SocketSupervisor::remove(TCPServer* server) {
 }
 
 void SocketSupervisor::loop() {
+    bool printed = false;
     while(running_) {
+        int biggest_descriptor = pipe_output_;
+        fd_set write_set;
+        FD_ZERO(&write_set);
+        if(!sockets_.empty()) {
+            std::for_each(sockets_.begin(), sockets_.end(), [&](auto socket) {
+                if (socket.first > biggest_descriptor)
+                    biggest_descriptor = socket.first;
+                FD_SET(socket.first, &write_set);
+                //std::cout << "Add\n";
+            });
+        }
         fd_set set;
         FD_ZERO(&set);
         FD_SET(pipe_output_, &set);
-        select(pipe_output_ + 1, &set, NULL, NULL, NULL);
+        //if(!sockets_.empty())
+        if(select(biggest_descriptor + 1, &set, &write_set, NULL, NULL) == -1) {
+            std::cout << "errno " << strerror(errno) << "\n";
+        }
+        //else
+        //    select(biggest_descriptor + 1, &set, NULL, NULL, NULL);
         if (FD_ISSET(pipe_output_, &set)) {
             char character;
             while (true) {
@@ -73,6 +92,16 @@ void SocketSupervisor::loop() {
                     break;
                 }
             }
+        }
+        if(!sockets_.empty()) {
+            std::for_each(sockets_.begin(), sockets_.end(), [&](auto socket) {
+                if (FD_ISSET(socket.first, &write_set)) {
+                    if(!printed) {
+                        std::cout << "1\n";
+                        printed = true;
+                    }
+                }
+            });
         }
     }
 }
