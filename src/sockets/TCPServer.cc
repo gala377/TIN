@@ -137,12 +137,7 @@ std::shared_ptr<TCPSocket> TCPServer::accept() {
 }
 
 uint16_t TCPServer::port() const {
-    struct sockaddr_in6 address;
-    socklen_t length = sizeof(address);
-    if(getsockname(socket_, (struct sockaddr*) &address, &length) == -1)
-        std::cout << "Error\n";
-//TODO error handling
-    return ntohs(address.sin6_port);
+    socket_interface_->port(socket_);
 }
 
 void TCPServer::setError(SocketError error) {
