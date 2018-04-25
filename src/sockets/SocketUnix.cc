@@ -43,3 +43,9 @@ ssize_t SocketUnix::read(int fd, void *buf, size_t nbytes) {
 int SocketUnix::setFlags(int fd, int flags) {
     fcntl(fd, F_SETFL, fcntl(fd, F_GETFL, 0) | flags);
 }
+
+int SocketUnix::availableBytes(int fd) {
+    int count = 0;
+    ioctl(fd,  FIONREAD, &count);
+    return count;
+}
