@@ -167,6 +167,11 @@ int TCPSocket::read(char* buffer, unsigned int size) {
     return status;
 }
 
+void TCPSocket::setConnected() {
+    setState(SocketState::CONNECTED);
+    connected();
+}
+
 int TCPSocket::availableBytes() const {
     return socket_interface_->availableBytes(socket_);
 }

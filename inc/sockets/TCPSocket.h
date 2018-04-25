@@ -50,6 +50,8 @@ public:
 
     boost::signals2::signal<void ()> readyRead;
     boost::signals2::signal<void ()> connected;
+
+    void setConnected();
 private:
     SocketFacade* socket_interface_;
 
