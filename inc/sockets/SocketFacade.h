@@ -24,6 +24,7 @@ public:
     virtual int socket(int domain, int type, int protocol) = 0;
     virtual int listen(int s, int backlog) = 0;
     virtual int close(int fd) = 0;
+    virtual int bind(int s, const struct sockaddr *addr, socklen_t addrlen) = 0;
     virtual int getErrno() = 0;
     virtual ssize_t write(int fd, const void *buf, size_t nbytes) = 0;
     virtual ssize_t read(int fd, void *buf, size_t nbytes) = 0;

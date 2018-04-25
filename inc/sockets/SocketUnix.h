@@ -15,6 +15,7 @@ public:
     virtual int socket(int domain, int type, int protocol);
     virtual int listen(int s, int backlog);
     virtual int close(int fd);
+    virtual int bind(int s, const struct sockaddr *addr, socklen_t addrlen);
     virtual int getErrno();
     virtual ssize_t write(int fd, const void *buf, size_t nbytes);
     virtual ssize_t read(int fd, void *buf, size_t nbytes);

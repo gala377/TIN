@@ -28,6 +28,10 @@ int SocketUnix::close(int fd) {
     return ::close(fd);
 }
 
+int SocketUnix::bind(int s, const struct sockaddr *addr, socklen_t addrlen) {
+    return ::bind(s, addr, addrlen);
+}
+
 int SocketUnix::getErrno() {
     return errno;
 }
