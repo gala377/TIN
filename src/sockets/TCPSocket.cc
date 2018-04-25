@@ -52,7 +52,7 @@ void TCPSocket::close() {
 bool TCPSocket::connect(in6_addr address, uint16_t port) {
     struct sockaddr_in6 server = createAddress(address, port);
     if(socket_interface_->connect(socket_, (struct sockaddr*) &server, sizeof(server)) == -1) {
-        std::cout << strerror(socket_interface_->getErrno()) << "\n";
+        //std::cout << strerror(socket_interface_->getErrno()) << "\n";
         switch(socket_interface_->getErrno()) {
             case EISCONN:
                 setState(SocketState::CONNECTED);
