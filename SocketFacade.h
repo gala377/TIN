@@ -14,6 +14,7 @@
 #include <sys/ioctl.h>
 #include <arpa/inet.h>
 #include <fcntl.h>
+#include <errno.h>
 
 class SocketFacade {
 public:
@@ -23,7 +24,7 @@ public:
     virtual int socket(int domain, int type, int protocol) = 0;
     virtual int listen(int s, int backlog) = 0;
     virtual int close(int fd) = 0;
-    virtual int errno() = 0;
+    virtual int getErrno() = 0;
 };
 
 
