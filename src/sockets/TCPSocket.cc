@@ -139,7 +139,7 @@ int TCPSocket::write(char* buffer, unsigned int size) {
     return status;
 }
 
-int TCPSocket::read(char* buffer, unsigned int size) {
+int TCPSocket::privateRead(char* buffer, unsigned int size) {
     int status = socket_interface_->read(socket_, buffer, size);
     if(status == -1) {
         switch (socket_interface_->getErrno()) {
@@ -165,6 +165,10 @@ int TCPSocket::read(char* buffer, unsigned int size) {
         status = -1;
     }
     return status;
+}
+
+void TCPSocket::read(char* buffer, unsigned int size) {
+    stream_.read(buffer, size);
 }
 
 void TCPSocket::setConnected() {
@@ -194,4 +198,11 @@ SocketState TCPSocket::getState() const {
 
 int TCPSocket::getDescriptor() const {
     return socket_;
+}
+
+void TCPSocket::readFromSocket() {
+    int bytes = availableBytes();
+    char* buffer = new char[bytes];
+    privateRead(buffer, bytes);
+    stream_.write(buffer, bytes);
 }

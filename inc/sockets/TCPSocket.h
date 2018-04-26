@@ -13,6 +13,7 @@
 #include <memory.h>
 #include <sys/ioctl.h>
 #include <boost/signals2.hpp>
+#include <sstream>
 
 #include "TCPSocketBase.h"
 #include "SocketFacade.h"
@@ -39,7 +40,7 @@ public:
     int write(char* buffer, unsigned int size);
     int write(std::string buffer);
 
-    int read(char* buffer, unsigned int size);
+    void read(char* buffer, unsigned int size);
 
     int availableBytes() const;
 
@@ -52,8 +53,10 @@ public:
     boost::signals2::signal<void ()> connected;
 
     void setConnected();
+    void readFromSocket();
 private:
     SocketFacade* socket_interface_;
+    std::stringstream stream_;
 
     int socket_;
     SocketState state_;
@@ -61,6 +64,8 @@ private:
 
     void setState(SocketState state);
     void setError(SocketError error);
+
+    int privateRead(char* buffer, unsigned int size);
 
 };
 
