@@ -6,7 +6,8 @@
 #include "../../inc/sockets/SocketSupervisor.h"
 
 
-SocketSupervisor::SocketSupervisor() {
+SocketSupervisor::SocketSupervisor(SocketFacade* socket_interface) :
+    socket_interface_(socket_interface) {
     int descriptors[2];
     pipe(descriptors);
     pipe_input_ = descriptors[1];
@@ -36,28 +37,23 @@ void SocketSupervisor::update() {
 
 void SocketSupervisor::add(TCPSocket* socket) {
     sockets_.insert(std::make_pair(socket->getDescriptor(), socket));
-    ioctl(socket->getDescriptor(), SIOCSPGRP, &process_pid_);
-    int on = 1;
-    ioctl(socket->getDescriptor(), FIOASYNC, &on);
+    socket_interface_->setAsyncIO(socket->getDescriptor(), process_pid_);
 }
 
 void SocketSupervisor::add(TCPServer* server) {
     servers_.insert(std::make_pair(server->getDescriptor(), server));
-    ioctl(server->getDescriptor(), SIOCSPGRP, &process_pid_);
-    int on = 1;
-    ioctl(server->getDescriptor(), FIOASYNC, &on);
+    socket_interface_->setAsyncIO(server->getDescriptor(), process_pid_);
+    std::cout << "Test " << process_pid_ << "\n";
 }
 
 void SocketSupervisor::remove(TCPSocket* socket) {
     sockets_.erase(socket->getDescriptor());
-    int on = 0;
-    ioctl(socket->getDescriptor(), FIOASYNC, &on);
+    socket_interface_->disableAsyncIO(socket->getDescriptor());
 }
 
 void SocketSupervisor::remove(TCPServer* server) {
     servers_.erase(server->getDescriptor());
-    int on = 0;
-    ioctl(server->getDescriptor(), FIOASYNC, &on);
+    socket_interface_->disableAsyncIO(server->getDescriptor());
 }
 
 void SocketSupervisor::loop() {
@@ -150,6 +146,7 @@ void SocketSupervisor::checkSockets() {
 
 void SocketSupervisor::sigioHandle(int signum) {
     pid_t temp = syscall(SYS_gettid);
+    std::cout << "PID: " << temp << "\n";
     SocketSupervisor::supervisors_[temp]->checkSockets();
 }
 

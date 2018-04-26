@@ -14,7 +14,7 @@
 
 class SocketSupervisor {
 public:
-    SocketSupervisor();
+    SocketSupervisor(SocketFacade* socket_interface);
     ~SocketSupervisor();
 
     void add(TCPSocket* socket);
@@ -32,6 +32,8 @@ private:
     void stop();
 
     void checkSockets();
+
+    SocketFacade* socket_interface_;
 
     int pipe_input_;
     int pipe_output_;
