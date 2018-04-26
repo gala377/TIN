@@ -5,8 +5,9 @@
 #ifndef TIN_TCPSOCKETWITHPACKET_H
 #define TIN_TCPSOCKETWITHPACKET_H
 
+#include "
 
-class TCPSocketWithPacket {
+class TCPSocketWithPacket : public TCPSocket{
 
 };
 
