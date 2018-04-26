@@ -16,9 +16,6 @@ SocketSupervisor::SocketSupervisor(SocketFacade* socket_interface) :
 
     running_ = true;
     thread = new std::thread([this](){
-        signal(SIGIO, SocketSupervisor::sigioHandle);
-        process_pid_ = syscall(SYS_gettid);
-        supervisors_.insert(std::make_pair(process_pid_, this));
         loop();
     });
 }
@@ -37,42 +34,48 @@ void SocketSupervisor::update() {
 
 void SocketSupervisor::add(TCPSocket* socket) {
     sockets_.insert(std::make_pair(socket->getDescriptor(), socket));
-    socket_interface_->setAsyncIO(socket->getDescriptor(), process_pid_);
+    update();
 }
 
 void SocketSupervisor::add(TCPServer* server) {
     servers_.insert(std::make_pair(server->getDescriptor(), server));
-    socket_interface_->setAsyncIO(server->getDescriptor(), process_pid_);
-    std::cout << "Test " << process_pid_ << "\n";
+    update();
 }
 
 void SocketSupervisor::remove(TCPSocket* socket) {
     sockets_.erase(socket->getDescriptor());
-    socket_interface_->disableAsyncIO(socket->getDescriptor());
+    update();
 }
 
 void SocketSupervisor::remove(TCPServer* server) {
     servers_.erase(server->getDescriptor());
-    socket_interface_->disableAsyncIO(server->getDescriptor());
+    update();
 }
 
 void SocketSupervisor::loop() {
-    bool printed = false;
     while(running_) {
         int biggest_descriptor = pipe_output_;
-        fd_set write_set;
-        FD_ZERO(&write_set);
-        if(!sockets_.empty()) {
-            std::for_each(sockets_.begin(), sockets_.end(), [&](auto socket) {
-                if(socket.second->getState() != SocketState::CONNECTED) {
-                    if (socket.first > biggest_descriptor)
-                        biggest_descriptor = socket.first;
-                    FD_SET(socket.first, &write_set);
-                }
-            });
-        }
         fd_set set;
         FD_ZERO(&set);
+        fd_set write_set;
+        FD_ZERO(&write_set);
+        std::for_each(sockets_.begin(), sockets_.end(), [&](auto socket) {
+            if(socket.second->getState() != SocketState::CONNECTED) {
+                if (socket.first > biggest_descriptor)
+                    biggest_descriptor = socket.first;
+                FD_SET(socket.first, &write_set);
+            }
+        });
+        std::for_each(sockets_.begin(), sockets_.end(), [&](auto socket) {
+            if (socket.first > biggest_descriptor)
+                biggest_descriptor = socket.first;
+            FD_SET(socket.first, &set);
+        });
+        std::for_each(servers_.begin(), servers_.end(), [&](auto server) {
+            if (server.first > biggest_descriptor)
+                biggest_descriptor = server.first;
+            FD_SET(server.first, &set);
+        });
         FD_SET(pipe_output_, &set);
         select(biggest_descriptor + 1, &set, &write_set, NULL, NULL);
         if (FD_ISSET(pipe_output_, &set)) {
@@ -83,15 +86,24 @@ void SocketSupervisor::loop() {
                 }
             }
         }
-        if(!sockets_.empty()) {
-            std::for_each(sockets_.begin(), sockets_.end(), [&](auto socket) {
-                if (FD_ISSET(socket.first, &write_set)) {
-                    if(socket.second->getState() == SocketState::CONNECTING) {
-                        socket.second->setConnected();
-                    }
+        std::for_each(sockets_.begin(), sockets_.end(), [&](auto socket) {
+            if (FD_ISSET(socket.first, &write_set)) {
+                if(socket.second->getState() == SocketState::CONNECTING) {
+                    socket.second->setConnected();
                 }
-            });
-        }
+            }
+        });
+        std::for_each(sockets_.begin(), sockets_.end(), [&](auto socket) {
+            if (FD_ISSET(socket.first, &set)) {
+                socket.second->readFromSocket();
+                socket.second->readyRead();
+            }
+        });
+        std::for_each(servers_.begin(), servers_.end(), [&](auto server) {
+            if (FD_ISSET(server.first, &set)) {
+                server.second->incomingConnection();
+            }
+        });
     }
 }
 
@@ -102,52 +114,3 @@ void SocketSupervisor::stop() {
         thread->join();
     }
 }
-
-void SocketSupervisor::checkSockets() {
-    int biggest_descriptor = 0;
-    fd_set set;
-    FD_ZERO(&set);
-    std::for_each(sockets_.begin(), sockets_.end(), [&](auto socket) {
-        if(socket.first >= 0) {
-            if(socket.first > biggest_descriptor)
-                biggest_descriptor = socket.first;
-            FD_SET(socket.first, &set);
-        }
-    });
-    std::for_each(servers_.begin(), servers_.end(), [&](auto server) {
-        if(server.first >= 0) {
-            if(server.first > biggest_descriptor)
-                biggest_descriptor = server.first;
-            FD_SET(server.first, &set);
-        }
-    });
-    struct timeval timeout;
-    timeout.tv_sec = 0;
-    timeout.tv_usec = 0;
-    select(biggest_descriptor+1, &set, NULL, NULL, &timeout);
-//TODO error handling
-    std::for_each(sockets_.begin(), sockets_.end(), [&](auto socket) {
-        if(socket.first >= 0) {
-            if(FD_ISSET(socket.first, &set)) {
-                socket.second->readyRead();
-//TODO
-            }
-        }
-    });
-    std::for_each(servers_.begin(), servers_.end(), [&](auto server) {
-        if(server.first >= 0) {
-            if(FD_ISSET(server.first, &set)) {
-                server.second->incomingConnection();
-//TODO
-            }
-        }
-    });
-}
-
-void SocketSupervisor::sigioHandle(int signum) {
-    pid_t temp = syscall(SYS_gettid);
-    std::cout << "PID: " << temp << "\n";
-    SocketSupervisor::supervisors_[temp]->checkSockets();
-}
-
-std::unordered_map<pid_t , SocketSupervisor*> SocketSupervisor::supervisors_;
