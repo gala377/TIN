@@ -4,40 +4,18 @@
 
 #include "../../inc/packages/Package.h"
 
-Package::Package() {
+Package::Package(uint32_t typeId,uint32_t size, uint32_t id) : id_(id), typeId_(typeId),size_(size) {
 }
 
-Package::Package(uint32_t typeId, uint32_t dataSize, const char *data) : data_(data), typeId_(typeId), dataSize_(dataSize) {
-}
-
-//uint32_t Package::getId() const{
-//    return id_;
-//}
-uint32_t Package::getTypeId() const {
+uint32_t Package::getTypeId_() const {
     return typeId_;
 }
 
-const char *Package::getData() const {
-    return data_;
+uint32_t Package::getSize_() const {
+    return size_;
 }
 
-char *Package::getPackageToSend() const {
-    char *packageToSend = new char[dataSize_ + sizeof(dataSize_) + sizeof(id_) + sizeof(typeId_)];
-
-    memcpy(packageToSend, &dataSize_, 4);
-    memcpy(packageToSend + 4, &id_, 4);
-    memcpy(packageToSend + 8, &typeId_, 4);
-    memcpy(packageToSend + 12, &data_, dataSize_ + 1);
-
-    return packageToSend;
+uint32_t Package::getId_() const {
+    return id_;
 }
 
-void Package::deserialize(const char *serializedStr) {
-    memcpy(&dataSize_, serializedStr, 4);
-    memcpy(&id_, serializedStr + 4, 4);
-    memcpy(&typeId_, serializedStr + 8, 4);
-
-
-    data_ = new char[dataSize_];
-    memcpy(&data_, serializedStr + 12, dataSize_ + 1);
-}
