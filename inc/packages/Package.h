@@ -16,20 +16,11 @@
 
 class Package {
 
-    friend class boost::serialization::access;
-
 public:
 
     Package() = default;
 
-    Package(uint32_t typeId,uint32_t size, uint32_t id);
-
-    template<class Archive>
-    void serialize(Archive &ar, const unsigned int version) {
-        ar & typeId_;
-        ar & size_;
-        ar & id_;
-    }
+    Package(uint32_t typeId, uint32_t size, uint32_t id);
 
     uint32_t getTypeId_() const;
 
@@ -41,6 +32,15 @@ private:
     uint32_t typeId_ = 0;
     uint32_t size_ = 0;
     uint32_t id_ = 0;
+
+    friend class boost::serialization::access;
+
+    template<class Archive>
+    void serialize(Archive &ar, const unsigned int version) {
+        ar & typeId_;
+        ar & size_;
+        ar & id_;
+    }
 };
 
 #endif //TIN_PACKAGE_H
