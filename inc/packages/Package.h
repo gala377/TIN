@@ -5,10 +5,6 @@
 #ifndef TIN_PACKAGE_H
 #define TIN_PACKAGE_H
 
-
-#include <stdio.h>
-#include <stdint.h>
-
 #include <boost/archive/binary_oarchive.hpp>
 #include <boost/archive/binary_iarchive.hpp>
 #include <boost/iostreams/device/back_inserter.hpp>
@@ -28,8 +24,8 @@ public:
 
     uint32_t getId_() const;
 
-private:
     uint32_t typeId_ = 0;
+private:
     uint32_t size_ = 0;
     uint32_t id_ = 0;
 
