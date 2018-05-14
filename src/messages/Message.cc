@@ -6,7 +6,6 @@
 
 Message::Message() :
     id_(global_id++) {
-    std::cout << "New packet " << id_ << "\n";
 }
 
 Message::~Message() {
@@ -28,6 +27,14 @@ Message* Message::fromString(const std::string& buffer) {
     boost::iostreams::basic_array_source<char> device(buffer.data(), buffer.size());
     boost::iostreams::stream<boost::iostreams::basic_array_source<char> > a(device);
     boost::archive::binary_iarchive inputArchive(a);
+
+    inputArchive >> result;
+    return result;
+}
+
+Message* Message::fromBuffer(boost::asio::streambuf& buffer) {
+    Message* result;
+    boost::archive::binary_iarchive inputArchive(buffer);
 
     inputArchive >> result;
     return result;

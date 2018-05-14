@@ -10,6 +10,7 @@
 #include <boost/iostreams/device/back_inserter.hpp>
 #include <boost/iostreams/stream.hpp>
 #include <boost/serialization/export.hpp>
+#include <boost/asio/streambuf.hpp>
 
 class Message {
 public:
@@ -17,6 +18,7 @@ public:
 
     std::string toString();
     static Message* fromString(const std::string& buffer);
+    static Message* fromBuffer(boost::asio::streambuf& buffer);
     uint32_t id_;
 protected:
     Message();
@@ -27,7 +29,6 @@ private:
     template<class Archive>
     void serialize(Archive &ar, const unsigned int version) {
         ar & id_;
-        std::cout << "Made " << id_ << "\n";
     }
 
     static uint32_t global_id;
