@@ -14,6 +14,7 @@
 #include <sys/ioctl.h>
 #include <boost/signals2.hpp>
 #include <sstream>
+#include <boost/asio/streambuf.hpp>
 
 #include "TCPSocketBase.h"
 #include "SocketFacade.h"
@@ -55,7 +56,7 @@ public:
     void setConnected();
     void readFromSocket();
 protected:
-    std::stringstream stream_;
+    boost::asio::streambuf buffer_;
 private:
     SocketFacade* socket_interface_;
 
