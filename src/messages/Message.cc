@@ -4,6 +4,14 @@
 
 #include "../../inc/messages/Message.h"
 
+Message::Message() :
+    id_(global_id++) {
+    std::cout << "New packet " << id_ << "\n";
+}
+
+Message::~Message() {
+}
+
 std::string Message::toString() {
     std::string result;
     boost::iostreams::back_insert_device<std::string> inserter(result);
@@ -24,3 +32,5 @@ Message* Message::fromString(const std::string& buffer) {
     inputArchive >> result;
     return result;
 }
+
+uint32_t Message::global_id = 10;

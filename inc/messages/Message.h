@@ -13,21 +13,24 @@
 
 class Message {
 public:
-    virtual ~Message() {}
-    int a;
+    virtual ~Message();
 
     std::string toString();
     static Message* fromString(const std::string& buffer);
+    uint32_t id_;
 protected:
-    Message() {};
+    Message();
 private:
 
     friend class boost::serialization::access;
 
     template<class Archive>
     void serialize(Archive &ar, const unsigned int version) {
-        ar & a;
+        ar & id_;
+        std::cout << "Made " << id_ << "\n";
     }
+
+    static uint32_t global_id;
 };
 
 #endif //TIN_MESSAGE_H
