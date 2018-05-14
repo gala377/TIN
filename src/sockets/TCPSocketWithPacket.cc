@@ -6,28 +6,22 @@
 
 TCPSocketWithPacket::TCPSocketWithPacket(SocketFacade* socket_interface) :
     TCPSocket(socket_interface) {
-    readyRead.connect([&]() {
-        if(availableBytes() >= 4) {
-            const std::string& temp = stream_.str();
-            const uint32_t* packet_size = reinterpret_cast<const uint32_t*>(&temp[0]);
-            if(availableBytes() >= *packet_size) {
-                const std::string& packet_data = temp.substr(4);
-                messages_.push(Message::fromString(packet_data));
-                packetReady();
-            }
-        }
-    });
+    createMessageHandler();
 }
 
 TCPSocketWithPacket::TCPSocketWithPacket(SocketFacade* socket_interface, int socket, SocketState state) :
     TCPSocket(socket_interface, socket, state) {
+    createMessageHandler();
+}
+
+void TCPSocketWithPacket::createMessageHandler() {
     readyRead.connect([&]() {
-        if(availableBytes() >= 4) {
-            const std::string& temp = stream_.str();
-            const uint32_t* packet_size = reinterpret_cast<const uint32_t*>(&temp[0]);
-            if(availableBytes() >= *packet_size) {
-                const std::string& packet_data = temp.substr(4);
-                messages_.push(Message::fromString(packet_data));
+        while(availableBytes() >= 4) {
+            const uint32_t* packet_size_address = boost::asio::buffer_cast<const uint32_t*>(*buffer_.data().begin());
+
+            if(availableBytes() >= *packet_size_address) {
+                buffer_.consume(4);
+                messages_.push(Message::fromBuffer(buffer_));
                 packetReady();
             }
         }

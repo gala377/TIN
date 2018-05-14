@@ -34,6 +34,8 @@ public:
     boost::signals2::signal<void ()> packetReady;
 private:
     std::queue<Message*> messages_;
+
+    void createMessageHandler();
 };
 
 
