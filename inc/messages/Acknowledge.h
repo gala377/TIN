@@ -15,7 +15,7 @@ public:
 private:
     uint32_t consumed_packet_id_;
 
-    Acknowledge() {}
+    Acknowledge() = default;
     friend class boost::serialization::access;
 
     template<class Archive>
