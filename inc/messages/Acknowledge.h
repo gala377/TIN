@@ -12,6 +12,7 @@ public:
     Acknowledge(int t) : b(t) {}
 
     int b;
+    //TODO change b to packet id to ACK
 private:
     Acknowledge() {}
     friend class boost::serialization::access;
