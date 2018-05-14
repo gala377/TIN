@@ -9,18 +9,19 @@
 
 class Acknowledge : public Message {
 public:
-    Acknowledge(int t) : b(t) {}
+    Acknowledge(uint32_t packet_id);
 
-    int b;
-    //TODO change b to packet id to ACK
+    uint32_t getConsumedPacketId() const;
 private:
+    uint32_t consumed_packet_id_;
+
     Acknowledge() {}
     friend class boost::serialization::access;
 
     template<class Archive>
     void serialize(Archive &ar, const unsigned int version) {
         ar & boost::serialization::base_object<Message>(*this);
-        ar & b;
+        ar & consumed_packet_id_;
     }
 };
 
