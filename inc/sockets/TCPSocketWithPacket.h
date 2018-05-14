@@ -5,7 +5,12 @@
 #ifndef TIN_TCPSOCKETWITHPACKET_H
 #define TIN_TCPSOCKETWITHPACKET_H
 
+#include <queue>
+#include <cinttypes>
+
 #include "TCPSocket.h"
+#include "../messages/Message.h"
+#include "../messages/Acknowledge.h"
 
 class Packet;
 
@@ -20,14 +25,15 @@ public:
 
     ~TCPSocketWithPacket();
 
-    void writePacket(Packet* packet);
+    void writePacket(Message* message);
 
-    Packet* readPacket();
+    Message* readPacket();
 
     int availablePackets();
 
     boost::signals2::signal<void ()> packetReady;
 private:
+    std::queue<Message*> messages_;
 };
 
 
