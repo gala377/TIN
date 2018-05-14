@@ -175,7 +175,7 @@ void TCPSocket::setConnected() {
 }
 
 int TCPSocket::availableBytes() const {
-    return socket_interface_->availableBytes(socket_);
+    return stream_.str().size();
 }
 
 void TCPSocket::setState(SocketState state) {
@@ -199,8 +199,12 @@ int TCPSocket::getDescriptor() const {
 }
 
 void TCPSocket::readFromSocket() {
-    int bytes = availableBytes();
+    int bytes = socketAvailableBytes();
     char* buffer = new char[bytes];
     privateRead(buffer, bytes);
     stream_.write(buffer, bytes);
+}
+
+int TCPSocket::socketAvailableBytes() const {
+    return socket_interface_->availableBytes(socket_);
 }

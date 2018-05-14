@@ -54,9 +54,10 @@ public:
 
     void setConnected();
     void readFromSocket();
+protected:
+    std::stringstream stream_;
 private:
     SocketFacade* socket_interface_;
-    std::stringstream stream_;
 
     int socket_;
     SocketState state_;
@@ -66,6 +67,7 @@ private:
     void setError(SocketError error);
 
     int privateRead(char* buffer, unsigned int size);
+    int socketAvailableBytes() const;
 
 };
 
