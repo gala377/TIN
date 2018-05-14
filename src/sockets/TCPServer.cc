@@ -96,7 +96,7 @@ bool TCPServer::listen(DNS address, uint16_t server_port) {
     return listen(ip(address), server_port);
 }
 
-std::shared_ptr<TCPSocket> TCPServer::accept() {
+std::shared_ptr<TCPSocketWithPacket> TCPServer::accept() {
     int status = socket_interface_->accept(socket_, (struct sockaddr*) nullptr, (socklen_t*) nullptr);
     if(status == -1) {
         std::cout << strerror(socket_interface_->getErrno()) << "\n";
@@ -133,7 +133,7 @@ std::shared_ptr<TCPSocket> TCPServer::accept() {
         }
         return nullptr;
     }
-    return std::make_shared<TCPSocket>(socket_interface_, status);
+    return std::make_shared<TCPSocketWithPacket>(socket_interface_, status);
 }
 
 uint16_t TCPServer::port() const {
