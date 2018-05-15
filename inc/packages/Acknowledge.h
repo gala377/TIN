@@ -12,7 +12,7 @@ class Acknowledge : public Package {
 public:
     Acknowledge() = default;
 
-    explicit Acknowledge(uint32_t acknowledgedPackedId) : acknowledgedPackedId_(acknowledgedPackedId) {}
+    explicit Acknowledge(uint32_t acknowledgedPackedId_);
 
     uint32_t getAcknowledgedPackedId() const;
 
@@ -23,8 +23,10 @@ private:
 
     template<class Archive>
     void serialize(Archive &ar, const unsigned int version) {
+        ar & boost::serialization::base_object<Package>(*this);
         ar & acknowledgedPackedId_;
     }
+
 
 };
 

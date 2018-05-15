@@ -4,18 +4,34 @@
 
 #include "../../inc/packages/Package.h"
 
-Package::Package(uint32_t typeId,uint32_t size, uint32_t id) : id_(id), typeId_(typeId),size_(size) {
-}
 
-uint32_t Package::getTypeId_() const {
-    return typeId_;
-}
-
-uint32_t Package::getSize_() const {
-    return size_;
-}
-
-uint32_t Package::getId_() const {
+uint32_t Package::getId() const {
     return id_;
 }
+
+void Package::setId_(uint32_t id_) {
+    Package::id_ = id_;
+}
+
+std::string Package::serialize() {
+    std::string serializedPackage;
+    boost::iostreams::back_insert_device<std::string> inserter(serializedPackage);
+    boost::iostreams::stream<boost::iostreams::back_insert_device<std::string> > s(inserter);
+    boost::archive::binary_oarchive outputArchive(s);
+
+    outputArchive & &(*this);
+    s.flush();
+
+    return serializedPackage;
+}
+
+Package *Package::deserialize(std::string serializedPackage) {
+    Package* package;
+    boost::iostreams::basic_array_source<char> device(serializedPackage.data(), serializedPackage.size());
+    boost::iostreams::stream<boost::iostreams::basic_array_source<char> > a(device);
+    boost::archive::binary_iarchive inputArchive(a);
+    inputArchive & package;
+    return package;
+}
+
 
