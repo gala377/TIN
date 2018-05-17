@@ -31,6 +31,10 @@ public:
 
     void pushWithoutSaving(Package *);
 
+    std::list<Package *> getWaiting();
+
+    std::list<Package *> getSent();
+
 };
 
 #endif //PACKAGEQUEUE_H

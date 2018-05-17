@@ -58,3 +58,11 @@ unsigned long PackageQueue::getWaitingSize() {
 void PackageQueue::pushWithoutSaving(Package *pkg) {
     waiting.push_back(pkg);
 }
+
+std::list<Package *> PackageQueue::getWaiting(){
+    return waiting;
+}
+
+std::list<Package *> PackageQueue::getSent(){
+    return sent;
+}
