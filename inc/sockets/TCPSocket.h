@@ -16,7 +16,7 @@
 #include <sstream>
 #include <boost/asio/streambuf.hpp>
 
-#include "TCPSocketBase.h"
+#include "SocketHelpers.h"
 #include "SocketFacade.h"
 
 class TCPSocket {
