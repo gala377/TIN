@@ -6,49 +6,53 @@
 #define TIN_FILESTORAGE_H
 
 #include <fstream>
+#include <set>
+#include <boost/filesystem.hpp>
 
 #include <queue/Storage.h>
+
 
 namespace Queue {
 
     class FileStorage: public Storage {
     public:
-        explicit FileStorage(std::string&& file_name);
-        explicit FileStorage(const std::string& file_name);
+        // todo file names caching
 
-        void add(Message mess) override;
+        explicit FileStorage(std::string&& root_path);
+        explicit FileStorage(const std::string& root_path);
+
+        void add(const Message& mess) override;
+        void add(const std::string& data);
         void remove(int id) override;
 
         std::vector<Message> getAll() override;
 
-        class Iterator: Storage::Iterator {
+        class Iterator {
         public:
             Iterator();
-            Iterator(const Iterator&);
 
-            ~Iterator();
+            bool operator==(const Iterator& iterator) const;
+            bool operator!=(const Iterator& iterator) const;
 
-            Iterator& operator=(const Iterator&);
+            Message operator*() const;
+            Message operator->() const;
 
-            bool operator==(const Iterator&);
-            bool operator!=(const Iterator&);
-
-            virtual Message operator*();
-            virtual Message operator->();
-
-            virtual Iterator& operator++();
-            virtual const Storage::Iterator operator++(int);
-
+            Iterator& operator++();
         };
 
         friend class Iterator;
 
-        Storage::Iterator begin() override;
-        Storage::Iterator end() override;
+        Iterator begin() const;
+        Iterator end() const;
 
 
     protected:
-        std::fstream _file;
+        boost::filesystem::path _root;
+
+        std::string makePath(const Message& mess) const;
+        std::string makePath(int id) const;
+
+        std::set<std::string> listFiles() const;
     };
 }
 #endif //TIN_FILESTORAGE_H
