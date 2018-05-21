@@ -2,19 +2,19 @@
 // Created by gajus123 on 26.04.18.
 //
 
-#include "sockets/TCPSocketWithPacket.h"
+#include "sockets/TCPSocket.h"
 
-TCPSocketWithPacket::TCPSocketWithPacket(SocketFacade* socket_interface) :
+TCPSocket::TCPSocket(SocketFacade* socket_interface) :
     TCPSocketBase(socket_interface) {
     createMessageHandler();
 }
 
-TCPSocketWithPacket::TCPSocketWithPacket(SocketFacade* socket_interface, int socket, SocketState state) :
+TCPSocket::TCPSocket(SocketFacade* socket_interface, int socket, SocketState state) :
     TCPSocketBase(socket_interface, socket, state) {
     createMessageHandler();
 }
 
-void TCPSocketWithPacket::createMessageHandler() {
+void TCPSocket::createMessageHandler() {
     readyRead.connect([&]() {
         while(availableBytes() >= 4) {
             const uint32_t* packet_size_address = boost::asio::buffer_cast<const uint32_t*>(*buffer_.data().begin());
@@ -28,31 +28,31 @@ void TCPSocketWithPacket::createMessageHandler() {
     });
 }
 
-TCPSocketWithPacket::TCPSocketWithPacket(TCPSocketWithPacket&& other) :
+TCPSocket::TCPSocket(TCPSocket&& other) :
     TCPSocketBase(std::move(other)) {
 }
 
-TCPSocketWithPacket& TCPSocketWithPacket::operator=(TCPSocketWithPacket&& other) {
+TCPSocket& TCPSocket::operator=(TCPSocket&& other) {
     TCPSocketBase::operator=(std::move(other));
     return *this;
 }
 
-TCPSocketWithPacket::~TCPSocketWithPacket() {
+TCPSocket::~TCPSocket() {
 }
 
-void TCPSocketWithPacket::writePacket(Message* message) {
+void TCPSocket::writePacket(Message* message) {
     std::string message_data = "0000" + message->toString();
     uint32_t *message_size = reinterpret_cast<uint32_t*>(&message_data[0]);
     *message_size = uint32_t(message_data.size());
     write(message_data);
 }
 
-Message* TCPSocketWithPacket::readPacket() {
+Message* TCPSocket::readPacket() {
     Message* result = messages_.front();
     messages_.pop();
     return result;
 }
 
-int TCPSocketWithPacket::availablePackets() {
+int TCPSocket::availablePackets() {
     return messages_.size();
 }

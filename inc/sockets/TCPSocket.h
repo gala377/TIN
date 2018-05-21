@@ -14,16 +14,16 @@
 
 class Packet;
 
-class TCPSocketWithPacket : public TCPSocketBase {
+class TCPSocket : public TCPSocketBase {
 public:
-    TCPSocketWithPacket(SocketFacade* socket_interface);
-    TCPSocketWithPacket(SocketFacade* socket_interface, int socket, SocketState state = SocketState::CONNECTED);
-    TCPSocketWithPacket(TCPSocketWithPacket&) = delete;
-    TCPSocketWithPacket(TCPSocketWithPacket&& other);
-    TCPSocketWithPacket& operator=(TCPSocketWithPacket&) = delete;
-    TCPSocketWithPacket& operator=(TCPSocketWithPacket&& other);
+    TCPSocket(SocketFacade* socket_interface);
+    TCPSocket(SocketFacade* socket_interface, int socket, SocketState state = SocketState::CONNECTED);
+    TCPSocket(TCPSocket&) = delete;
+    TCPSocket(TCPSocket&& other);
+    TCPSocket& operator=(TCPSocket&) = delete;
+    TCPSocket& operator=(TCPSocket&& other);
 
-    ~TCPSocketWithPacket();
+    ~TCPSocket();
 
     void writePacket(Message* message);
 

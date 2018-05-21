@@ -15,7 +15,7 @@
 #include <memory>
 #include <boost/signals2.hpp>
 
-#include "TCPSocketWithPacket.h"
+#include "TCPSocket.h"
 
 class TCPServer {
 public:
@@ -37,7 +37,7 @@ public:
 
     bool waitForConnection(int ms);
 
-    std::shared_ptr<TCPSocketWithPacket> accept();
+    std::shared_ptr<TCPSocket> accept();
     uint16_t port() const;
 
     int getDescriptor() const;
