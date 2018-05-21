@@ -20,13 +20,16 @@
 struct IP {
     std::string address;
 };
+
 struct DNS {
     std::string address;
 };
+
 enum class SocketError {
     UNSUPPORTED_OPERATION, ADDRESS_IN_USE, ACCESS_ERROR, ADDRESS_NOT_AVAILABLE, NETWORK_ERROR,
     SOCKET_RESOURCE, TEMPORARY_ERROR, CONNECTION_REFUSED, UNFINISHED_OPERATION, HOST_CLOSED,
 };
+
 enum class SocketState {
     UNCONNECTED, BOUND, LISTEN, CONNECTING, CONNECTED, CLOSING
 };
