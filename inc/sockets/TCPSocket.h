@@ -25,15 +25,15 @@ namespace Sockets {
         TCPSocket &operator=(TCPSocket &&other);
         ~TCPSocket();
 
-        void writePacket(Message *message);
+        void writeMessage(Message& message);
 
-        Message *readPacket();
+        std::shared_ptr<Message> readMessage();
 
-        int availablePackets();
+        int availableMessages();
 
         boost::signals2::signal<void()> packetReady;
     private:
-        std::queue<Message *> messages_;
+        std::queue<std::shared_ptr<Message>> messages_;
 
         void createMessageHandler();
     };

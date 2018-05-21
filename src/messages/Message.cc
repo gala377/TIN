@@ -22,22 +22,22 @@ std::string Message::toString() {
     return result;
 }
 
-Message* Message::fromString(const std::string& buffer) {
+std::shared_ptr<Message> Message::fromString(const std::string& buffer) {
     Message* result;
     boost::iostreams::basic_array_source<char> device(buffer.data(), buffer.size());
     boost::iostreams::stream<boost::iostreams::basic_array_source<char> > a(device);
     boost::archive::binary_iarchive inputArchive(a);
 
     inputArchive >> result;
-    return result;
+    return std::shared_ptr<Message>(result);
 }
 
-Message* Message::fromBuffer(boost::asio::streambuf& buffer) {
+std::shared_ptr<Message> Message::fromBuffer(boost::asio::streambuf& buffer) {
     Message* result;
     boost::archive::binary_iarchive inputArchive(buffer);
 
     inputArchive >> result;
-    return result;
+    return std::shared_ptr<Message>(result);
 }
 
 uint32_t Message::global_id = 10;

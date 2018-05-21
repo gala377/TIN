@@ -17,8 +17,8 @@ public:
     virtual ~Message();
 
     std::string toString();
-    static Message* fromString(const std::string& buffer);
-    static Message* fromBuffer(boost::asio::streambuf& buffer);
+    static std::shared_ptr<Message> fromString(const std::string& buffer);
+    static std::shared_ptr<Message> fromBuffer(boost::asio::streambuf& buffer);
     uint32_t id_;
 protected:
     Message();

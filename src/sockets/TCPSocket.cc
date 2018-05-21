@@ -42,20 +42,20 @@ namespace Sockets {
     TCPSocket::~TCPSocket() {
     }
 
-    void TCPSocket::writePacket(Message *message) {
-        std::string message_data = "0000" + message->toString();
+    void TCPSocket::writeMessage(Message& message) {
+        std::string message_data = "0000" + message.toString();
         uint32_t *message_size = reinterpret_cast<uint32_t *>(&message_data[0]);
         *message_size = uint32_t(message_data.size());
         write(message_data);
     }
 
-    Message *TCPSocket::readPacket() {
-        Message *result = messages_.front();
+    std::shared_ptr<Message> TCPSocket::readMessage() {
+        std::shared_ptr<Message> result = messages_.front();
         messages_.pop();
         return result;
     }
 
-    int TCPSocket::availablePackets() {
+    int TCPSocket::availableMessages() {
         return messages_.size();
     }
 }
