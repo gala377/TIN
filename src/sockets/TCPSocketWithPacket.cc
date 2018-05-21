@@ -2,7 +2,7 @@
 // Created by gajus123 on 26.04.18.
 //
 
-#include "../../inc/sockets/TCPSocketWithPacket.h"
+#include "sockets/TCPSocketWithPacket.h"
 
 TCPSocketWithPacket::TCPSocketWithPacket(SocketFacade* socket_interface) :
     TCPSocket(socket_interface) {

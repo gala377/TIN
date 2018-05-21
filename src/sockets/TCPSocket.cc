@@ -2,7 +2,7 @@
 // Created by gajus123 on 16.04.18.
 //
 
-#include "../../inc/sockets/TCPSocket.h"
+#include "sockets/TCPSocket.h"
 
 TCPSocket::TCPSocket(SocketFacade* socket_interface) :
     socket_interface_(socket_interface) {

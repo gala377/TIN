@@ -2,7 +2,7 @@
 // Created by gajus123 on 14.05.18.
 //
 
-#include "../../inc/messages/Message.h"
+#include "messages/Message.h"
 
 Message::Message() :
     id_(global_id++) {

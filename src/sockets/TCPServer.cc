@@ -2,7 +2,7 @@
 // Created by gajus123 on 17.04.18.
 //
 
-#include "../../inc/sockets/TCPServer.h"
+#include "sockets/TCPServer.h"
 
 TCPServer::TCPServer(SocketFacade* socket_interface) :
     socket_interface_(socket_interface) {
