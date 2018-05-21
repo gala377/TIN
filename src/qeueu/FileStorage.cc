@@ -3,6 +3,7 @@
 //
 
 #include <fstream>
+#include <iostream>
 #include <boost/filesystem.hpp>
 #include <boost/range/iterator_range.hpp>
 #include <boost/archive/text_oarchive.hpp>
@@ -23,9 +24,17 @@ FileStorage::FileStorage(const std::string& root_path): _root(root_path) {
 
 void FileStorage::add(const Message& mess) {
     // todo error if file already exists
-    std::fstream file(makePath(mess), std::fstream::in);
+    std::fstream file;
+    file.open(makePath(mess), std::fstream::out);
     boost::archive::text_oarchive o_archive(file);
     o_archive << mess;
+    file.close();
+}
+
+void FileStorage::add(int id, const std::string& data) {
+    std::fstream file;
+    file.open(makePath(id), std::fstream::out);
+    file << data;
     file.close();
 }
 
@@ -41,13 +50,18 @@ std::vector<Message> FileStorage::getAll() {
 
 
 std::string FileStorage::makePath(int id) const {
-    return _root.string() + "/" + std::to_string(id);
+    return _root.string() + "/" + padInt(id);
 }
 
 std::string FileStorage::makePath(const Message& mess) const {
-    return _root.string() + "/" + std::to_string(mess.id_);
+    return _root.string() + "/" + padInt(mess.id_);
 }
 
+std::string FileStorage::padInt(int num) const {
+    auto padded = std::to_string(num);
+    padded.insert(0, 20U - std::min(std::string::size_type(20), padded.length()), '0');
+    return padded;
+}
 
 std::set<std::string> FileStorage::listFiles() const {
     std::set<std::string> files;

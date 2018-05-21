@@ -2,70 +2,36 @@
 // Created by gajus123 on 23.04.18.
 //
 
+#include <queue/FileStorage.h>
+
 #include <iostream>
-#include <future>
-#include "../inc/sockets/TCPSocket.h"
-#include "../inc/sockets/TCPServer.h"
-#include "../inc/sockets/SocketSupervisor.h"
-#include "../inc/sockets/SocketUnix.h"
 
 int main() {
-    SocketUnix unixSocket;
-    uint16_t port = 56004;
-    TCPServer server(&unixSocket);
-    std::shared_ptr<TCPSocket> socket1;
-    TCPSocket socket2(&unixSocket);
-    char packet1[16];
-    {
-        uint32_t *temp = reinterpret_cast<uint32_t *>(&packet1[0]);
-        *temp = uint32_t(10);
-        temp = reinterpret_cast<uint32_t *>(&packet1[4]);
-        *temp = uint32_t(15);
-        temp = reinterpret_cast<uint32_t *>(&packet1[8]);
-        *temp = uint32_t(4);
-    }
-    char packet2[20];
-    {
-        uint32_t *temp = reinterpret_cast<uint32_t*>(&packet2[0]);
-        *temp = uint32_t(1);
-        temp = reinterpret_cast<uint32_t*>(&packet2[4]);
-        *temp = uint32_t(84);
-        temp = reinterpret_cast<uint32_t*>(&packet2[8]);
-        *temp = uint32_t(8);
-    }
-    char packet3[23];
-    {
-        uint32_t *temp = reinterpret_cast<uint32_t *>(&packet3[0]);
-        *temp = uint32_t(5);
-        temp = reinterpret_cast<uint32_t*>(&packet3[4]);
-        *temp = uint32_t(13215);
-        temp = reinterpret_cast<uint32_t*>(&packet3[8]);
-        *temp = uint32_t(11);
-    }
-    auto test = std::async(std::launch::async, [&](){
-        server.listen(port);
-        server.waitForConnection(7000);
-        socket1 = server.accept();
-        sleep(1);
-    });
-    sleep(1);
-    socket2.connect(IP({"::1"}), port);
-    std::cout << "Port " << socket2.port() << "\n";
-    int a;
-    std::cin >> a;
-    sleep(1);
+    std::cout << "starting test\n";
+    Queue::FileStorage storage("storage_tests");
 
-    int i = 0;
-    while(i++ < 1) {
-        socket1->write(packet1, 16);
-        sleep(2);
-        socket1->write(packet2, 20);
-        sleep(2);
-        socket1->write(packet3, 23);
-        sleep(2);
-    }
+    char c;
+    std::cin >> c;
 
-    server.close();
-    socket1->close();
-    socket2.close();
+    storage.add(0, "test_0");
+    storage.add(1, "test_1");
+    storage.add(2, "test_2");
+    storage.add(3, "test_3");
+    storage.add(11, "test_4");
+
+    std::cout << "Files stored\n";
+    for(auto& file: storage.listFiles()) {
+        std::cout << file << "\n";
+    }
+    std::cin >> c;
+
+    storage.remove(0);
+
+    std::cout << "One file removed\n";
+    std::cin >> c;
+
+    storage.remove(2);
+    storage.remove(3);
+
+    std::cout << "2 files removed\n";
 }

@@ -17,12 +17,13 @@ namespace Queue {
     class FileStorage: public Storage {
     public:
         // todo file names caching
+        // todo implement iterator
 
         explicit FileStorage(std::string&& root_path);
         explicit FileStorage(const std::string& root_path);
 
         void add(const Message& mess) override;
-        void add(const std::string& data);
+        void add(int id, const std::string& data);
         void remove(int id) override;
 
         std::vector<Message> getAll() override;
@@ -45,6 +46,7 @@ namespace Queue {
         Iterator begin() const;
         Iterator end() const;
 
+        std::set<std::string> listFiles() const;
 
     protected:
         boost::filesystem::path _root;
@@ -52,7 +54,8 @@ namespace Queue {
         std::string makePath(const Message& mess) const;
         std::string makePath(int id) const;
 
-        std::set<std::string> listFiles() const;
+        std::string padInt(int num) const;
+
     };
 }
 #endif //TIN_FILESTORAGE_H
