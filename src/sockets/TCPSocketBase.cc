@@ -2,9 +2,9 @@
 // Created by gajus123 on 16.04.18.
 //
 
-#include "sockets/TCPSocket.h"
+#include "sockets/TCPSocketBase.h"
 
-TCPSocket::TCPSocket(SocketFacade* socket_interface) :
+TCPSocketBase::TCPSocketBase(SocketFacade* socket_interface) :
     socket_interface_(socket_interface) {
     socket_ = socket_interface_->socket(AF_INET6, SOCK_STREAM, 0);
     state_ = SocketState::UNCONNECTED;
@@ -13,23 +13,23 @@ TCPSocket::TCPSocket(SocketFacade* socket_interface) :
     socket_interface_->setFlags(socket_, O_NONBLOCK);
 }
 
-TCPSocket::TCPSocket(SocketFacade* socket_interface, int socket, SocketState state ) :
+TCPSocketBase::TCPSocketBase(SocketFacade* socket_interface, int socket, SocketState state ) :
     socket_interface_(socket_interface),
     socket_(socket),
     state_(state) {
 }
 
-TCPSocket::~TCPSocket() {
+TCPSocketBase::~TCPSocketBase() {
     close();
 }
 
-TCPSocket::TCPSocket(TCPSocket&& other) {
+TCPSocketBase::TCPSocketBase(TCPSocketBase&& other) {
     socket_ = other.socket_;
     state_ = other.state_;
     other.socket_ = -1;
 }
 
-TCPSocket& TCPSocket::operator=(TCPSocket&& other) {
+TCPSocketBase& TCPSocketBase::operator=(TCPSocketBase&& other) {
     close();
     socket_ = other.socket_;
     state_ = other.state_;
@@ -38,7 +38,7 @@ TCPSocket& TCPSocket::operator=(TCPSocket&& other) {
     return *this;
 }
 
-void TCPSocket::close() {
+void TCPSocketBase::close() {
     if(socket_ >= 0) {
         int status = socket_interface_->close(socket_);
         if (status == -1) {
@@ -49,7 +49,7 @@ void TCPSocket::close() {
     }
 }
 
-bool TCPSocket::connect(in6_addr address, uint16_t port) {
+bool TCPSocketBase::connect(in6_addr address, uint16_t port) {
     struct sockaddr_in6 server = createAddress(address, port);
     if(socket_interface_->connect(socket_, (struct sockaddr*) &server, sizeof(server)) == -1) {
         switch(socket_interface_->getErrno()) {
@@ -101,25 +101,25 @@ bool TCPSocket::connect(in6_addr address, uint16_t port) {
     return true;
 }
 
-bool TCPSocket::connect(IP address, uint16_t port) {
+bool TCPSocketBase::connect(IP address, uint16_t port) {
     return connect(ip(address), port);
 }
 
-bool TCPSocket::connect(DNS address, uint16_t port) {
+bool TCPSocketBase::connect(DNS address, uint16_t port) {
     return connect(ip(address), port);
 }
 
-uint16_t TCPSocket::port() const {
+uint16_t TCPSocketBase::port() const {
     return socket_interface_->port(socket_);
 }
 
-int TCPSocket::write(std::string buffer) {
+int TCPSocketBase::write(std::string buffer) {
     if(buffer.size() == 0)
         return 0;
     return write(&buffer.front(), buffer.size());
 }
 
-int TCPSocket::write(char* buffer, unsigned int size) {
+int TCPSocketBase::write(char* buffer, unsigned int size) {
     if(size == 0)
         return 0;
     int status = socket_interface_->write(socket_, buffer, size);
@@ -138,7 +138,7 @@ int TCPSocket::write(char* buffer, unsigned int size) {
     return status;
 }
 
-int TCPSocket::privateRead(char* buffer, unsigned int size) {
+int TCPSocketBase::privateRead(char* buffer, unsigned int size) {
     int status = socket_interface_->read(socket_, buffer, size);
     if(status == -1) {
         switch (socket_interface_->getErrno()) {
@@ -165,46 +165,46 @@ int TCPSocket::privateRead(char* buffer, unsigned int size) {
     return status;
 }
 
-void TCPSocket::read(char* buffer, unsigned int size) {
+void TCPSocketBase::read(char* buffer, unsigned int size) {
     buffer_.sgetn(buffer, size);
 }
 
-void TCPSocket::setConnected() {
+void TCPSocketBase::setConnected() {
     setState(SocketState::CONNECTED);
     connected();
 }
 
-int TCPSocket::availableBytes() const {
+int TCPSocketBase::availableBytes() const {
     return buffer_.size();
 }
 
-void TCPSocket::setState(SocketState state) {
+void TCPSocketBase::setState(SocketState state) {
     state_ = state;
 }
 
-void TCPSocket::setError(SocketError error) {
+void TCPSocketBase::setError(SocketError error) {
     error_ = error;
 }
 
-SocketError TCPSocket::getError() const {
+SocketError TCPSocketBase::getError() const {
     return error_;
 }
 
-SocketState TCPSocket::getState() const {
+SocketState TCPSocketBase::getState() const {
     return state_;
 }
 
-int TCPSocket::getDescriptor() const {
+int TCPSocketBase::getDescriptor() const {
     return socket_;
 }
 
-void TCPSocket::readFromSocket() {
+void TCPSocketBase::readFromSocket() {
     int bytes = socketAvailableBytes();
     char* buffer = new char[bytes];
     privateRead(buffer, bytes);
     buffer_.sputn(buffer, bytes);
 }
 
-int TCPSocket::socketAvailableBytes() const {
+int TCPSocketBase::socketAvailableBytes() const {
     return socket_interface_->availableBytes(socket_);
 }

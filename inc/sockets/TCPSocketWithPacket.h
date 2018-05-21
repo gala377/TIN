@@ -8,13 +8,13 @@
 #include <queue>
 #include <cinttypes>
 
-#include "TCPSocket.h"
+#include "TCPSocketBase.h"
 #include "../messages/Message.h"
 #include "../messages/Acknowledge.h"
 
 class Packet;
 
-class TCPSocketWithPacket : public TCPSocket {
+class TCPSocketWithPacket : public TCPSocketBase {
 public:
     TCPSocketWithPacket(SocketFacade* socket_interface);
     TCPSocketWithPacket(SocketFacade* socket_interface, int socket, SocketState state = SocketState::CONNECTED);

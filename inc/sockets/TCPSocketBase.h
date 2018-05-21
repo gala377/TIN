@@ -19,16 +19,16 @@
 #include "SocketHelpers.h"
 #include "SocketFacade.h"
 
-class TCPSocket {
+class TCPSocketBase {
 public:
-    TCPSocket(SocketFacade* socket_interface);
-    TCPSocket(SocketFacade* socket_interface, int socket, SocketState state = SocketState::CONNECTED);
-    TCPSocket(TCPSocket&) = delete;
-    TCPSocket(TCPSocket&& other);
-    TCPSocket& operator=(TCPSocket&) = delete;
-    TCPSocket& operator=(TCPSocket&& other);
+    TCPSocketBase(SocketFacade* socket_interface);
+    TCPSocketBase(SocketFacade* socket_interface, int socket, SocketState state = SocketState::CONNECTED);
+    TCPSocketBase(TCPSocketBase&) = delete;
+    TCPSocketBase(TCPSocketBase&& other);
+    TCPSocketBase& operator=(TCPSocketBase&) = delete;
+    TCPSocketBase& operator=(TCPSocketBase&& other);
 
-    ~TCPSocket();
+    ~TCPSocketBase();
 
     void close();
 

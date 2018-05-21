@@ -32,7 +32,7 @@ void SocketSupervisor::update() {
     write(pipe_input_, &character, 1);
 }
 
-void SocketSupervisor::add(TCPSocket* socket) {
+void SocketSupervisor::add(TCPSocketBase* socket) {
     sockets_.insert(std::make_pair(socket->getDescriptor(), socket));
     update();
 }
@@ -42,7 +42,7 @@ void SocketSupervisor::add(TCPServer* server) {
     update();
 }
 
-void SocketSupervisor::remove(TCPSocket* socket) {
+void SocketSupervisor::remove(TCPSocketBase* socket) {
     sockets_.erase(socket->getDescriptor());
     update();
 }

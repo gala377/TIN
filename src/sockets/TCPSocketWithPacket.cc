@@ -5,12 +5,12 @@
 #include "sockets/TCPSocketWithPacket.h"
 
 TCPSocketWithPacket::TCPSocketWithPacket(SocketFacade* socket_interface) :
-    TCPSocket(socket_interface) {
+    TCPSocketBase(socket_interface) {
     createMessageHandler();
 }
 
 TCPSocketWithPacket::TCPSocketWithPacket(SocketFacade* socket_interface, int socket, SocketState state) :
-    TCPSocket(socket_interface, socket, state) {
+    TCPSocketBase(socket_interface, socket, state) {
     createMessageHandler();
 }
 
@@ -29,11 +29,11 @@ void TCPSocketWithPacket::createMessageHandler() {
 }
 
 TCPSocketWithPacket::TCPSocketWithPacket(TCPSocketWithPacket&& other) :
-    TCPSocket(std::move(other)) {
+    TCPSocketBase(std::move(other)) {
 }
 
 TCPSocketWithPacket& TCPSocketWithPacket::operator=(TCPSocketWithPacket&& other) {
-    TCPSocket::operator=(std::move(other));
+    TCPSocketBase::operator=(std::move(other));
     return *this;
 }
 

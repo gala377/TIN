@@ -4,7 +4,7 @@
 
 #include <iostream>
 #include <future>
-#include "../inc/sockets/TCPSocket.h"
+#include "sockets/TCPSocketBase.h"
 #include "../inc/sockets/TCPServer.h"
 #include "../inc/sockets/SocketSupervisor.h"
 #include "../inc/sockets/SocketUnix.h"
@@ -13,8 +13,8 @@ int main() {
     SocketUnix unixSocket;
     uint16_t port = 56004;
     TCPServer server(&unixSocket);
-    std::shared_ptr<TCPSocket> socket1;
-    TCPSocket socket2(&unixSocket);
+    std::shared_ptr<TCPSocketBase> socket1;
+    TCPSocketBase socket2(&unixSocket);
     char packet1[16];
     {
         uint32_t *temp = reinterpret_cast<uint32_t *>(&packet1[0]);
