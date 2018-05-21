@@ -18,6 +18,35 @@ namespace Queue {
 
         void add(Message mess) override;
         void remove(int id) override;
+
+        std::vector<Message> getAll() override;
+
+        class Iterator: Storage::Iterator {
+        public:
+            Iterator();
+            Iterator(const Iterator&);
+
+            ~Iterator();
+
+            Iterator& operator=(const Iterator&);
+
+            bool operator==(const Iterator&);
+            bool operator!=(const Iterator&);
+
+            virtual Message operator*();
+            virtual Message operator->();
+
+            virtual Iterator& operator++();
+            virtual const Storage::Iterator operator++(int);
+
+        };
+
+        friend class Iterator;
+
+        Storage::Iterator begin() override;
+        Storage::Iterator end() override;
+
+
     protected:
         std::fstream _file;
     };

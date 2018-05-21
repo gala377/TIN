@@ -16,7 +16,7 @@ include_directories(./inc)
 set(SOURCE_FILES src/sockets/TCPSocket.cc  src/sockets/TCPServer.cc  src/sockets/TCPSocketBase.cc
         src/sockets/SocketSupervisor.cc src/Example.cc  src/sockets/SocketUnix.cc src/sockets/TCPSocketWithPacket.cc
          src/messages/Message.cc  src/messages/Acknowledge.cc
-        tests/messages/test_Acknowledge.cc)
+        tests/messages/test_Acknowledge.cc src/qeueu/FileStorage.cc)
 add_executable(TIN ${SOURCE_FILES})
 
 if(Boost_FOUND)

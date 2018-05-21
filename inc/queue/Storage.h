@@ -1,12 +1,10 @@
 //
-// Created by igor on 21.05.18.
+// Created by igor on 22.05.18.
 //
 
 #ifndef TIN_STORAGE_H
 #define TIN_STORAGE_H
 
-
-#vec
 #include <messages/Message.h>
 
 namespace Queue {
@@ -20,17 +18,25 @@ namespace Queue {
 
         class Iterator {
         public:
+            Iterator();
+            Iterator(const Iterator&);
+
+            virtual Iterator& operator=(const Iterator&) = 0;
+
+            virtual bool operator==(const Iterator&) = 0;
+            virtual bool operator!=(const Iterator&) = 0;
+
             virtual Message operator*() = 0;
+            virtual Message operator->() = 0;
 
             virtual Iterator& operator++() = 0;
-            virtual Iterator& operator++(int) = 0;
+            virtual const Iterator operator++(int) = 0;
+
         };
 
         virtual Iterator begin() = 0;
         virtual Iterator end() = 0;
-
     };
-
 }
 
 #endif //TIN_STORAGE_H
