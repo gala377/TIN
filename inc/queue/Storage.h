@@ -22,8 +22,8 @@ namespace Queue {
         public:
             virtual Message operator*() = 0;
 
-            virtual Iterator& operator++();
-            virtual Iterator& operator++(int);
+            virtual Iterator& operator++() = 0;
+            virtual Iterator& operator++(int) = 0;
         };
 
         virtual Iterator begin() = 0;
