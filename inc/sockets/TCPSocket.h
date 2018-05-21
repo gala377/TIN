@@ -14,29 +14,30 @@
 
 class Packet;
 
-class TCPSocket : public TCPSocketBase {
-public:
-    TCPSocket(SocketFacade* socket_interface);
-    TCPSocket(SocketFacade* socket_interface, int socket, SocketState state = SocketState::CONNECTED);
-    TCPSocket(TCPSocket&) = delete;
-    TCPSocket(TCPSocket&& other);
-    TCPSocket& operator=(TCPSocket&) = delete;
-    TCPSocket& operator=(TCPSocket&& other);
+namespace Sockets {
+    class TCPSocket : public TCPSocketBase {
+    public:
+        TCPSocket(SocketFacade *socket_interface);
+        TCPSocket(SocketFacade *socket_interface, int socket, SocketState state = SocketState::CONNECTED);
+        TCPSocket(TCPSocket &) = delete;
+        TCPSocket(TCPSocket &&other);
+        TCPSocket &operator=(TCPSocket &) = delete;
+        TCPSocket &operator=(TCPSocket &&other);
+        ~TCPSocket();
 
-    ~TCPSocket();
+        void writePacket(Message *message);
 
-    void writePacket(Message* message);
+        Message *readPacket();
 
-    Message* readPacket();
+        int availablePackets();
 
-    int availablePackets();
+        boost::signals2::signal<void()> packetReady;
+    private:
+        std::queue<Message *> messages_;
 
-    boost::signals2::signal<void ()> packetReady;
-private:
-    std::queue<Message*> messages_;
-
-    void createMessageHandler();
-};
+        void createMessageHandler();
+    };
+}
 
 
 #endif //TIN_TCPSOCKETWITHPACKET_H

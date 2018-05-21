@@ -12,33 +12,38 @@
 #include "TCPServer.h"
 #include "TCPSocketBase.h"
 
-class SocketSupervisor {
-public:
-    SocketSupervisor(SocketFacade* socket_interface);
-    ~SocketSupervisor();
+namespace Sockets {
+    class SocketSupervisor {
+    public:
+        SocketSupervisor(SocketFacade *socket_interface);
 
-    void add(TCPSocketBase* socket);
-    void add(TCPServer* server);
+        ~SocketSupervisor();
 
-    void remove(TCPSocketBase* socket);
-    void remove(TCPServer* server);
-private:
-    void update();
-    void loop();
+        void add(TCPSocketBase *socket);
+        void add(TCPServer *server);
 
-    void stop();
+        void remove(TCPSocketBase *socket);
+        void remove(TCPServer *server);
 
-    SocketFacade* socket_interface_;
+    private:
+        void update();
 
-    int pipe_input_;
-    int pipe_output_;
+        void loop();
 
-    std::thread* thread;
-    bool running_;
+        void stop();
 
-    std::unordered_map<int, TCPSocketBase*> sockets_;
-    std::unordered_map<int, TCPServer*> servers_;
-};
+        SocketFacade *socket_interface_;
+
+        int pipe_input_;
+        int pipe_output_;
+
+        std::thread *thread;
+        bool running_;
+
+        std::unordered_map<int, TCPSocketBase *> sockets_;
+        std::unordered_map<int, TCPServer *> servers_;
+    };
+}
 
 
 #endif //TIN_SOCKETSUPERVISOR_H

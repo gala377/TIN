@@ -19,58 +19,59 @@
 #include "SocketHelpers.h"
 #include "SocketFacade.h"
 
-class TCPSocketBase {
-public:
-    TCPSocketBase(SocketFacade* socket_interface);
-    TCPSocketBase(SocketFacade* socket_interface, int socket, SocketState state = SocketState::CONNECTED);
-    TCPSocketBase(TCPSocketBase&) = delete;
-    TCPSocketBase(TCPSocketBase&& other);
-    TCPSocketBase& operator=(TCPSocketBase&) = delete;
-    TCPSocketBase& operator=(TCPSocketBase&& other);
+namespace Sockets {
+    class TCPSocketBase {
+    public:
+        TCPSocketBase(SocketFacade* socket_interface);
+        TCPSocketBase(SocketFacade* socket_interface, int socket, SocketState state = SocketState::CONNECTED);
+        TCPSocketBase(TCPSocketBase&) = delete;
+        TCPSocketBase(TCPSocketBase&& other);
+        TCPSocketBase& operator=(TCPSocketBase&) = delete;
+        TCPSocketBase& operator=(TCPSocketBase&& other);
 
-    ~TCPSocketBase();
+        ~TCPSocketBase();
 
-    void close();
+        void close();
 
-    bool connect(in6_addr address, uint16_t port);
-    bool connect(IP address, uint16_t port);
-    bool connect(DNS address, uint16_t port);
+        bool connect(in6_addr address, uint16_t port);
+        bool connect(IP address, uint16_t port);
+        bool connect(DNS address, uint16_t port);
 
-    uint16_t port() const;
+        uint16_t port() const;
 
-    int write(char* buffer, unsigned int size);
-    int write(std::string buffer);
+        int write(char* buffer, unsigned int size);
+        int write(std::string buffer);
 
-    void read(char* buffer, unsigned int size);
+        void read(char* buffer, unsigned int size);
 
-    int availableBytes() const;
+        int availableBytes() const;
 
-    SocketError getError() const;
-    SocketState getState() const;
+        SocketError getError() const;
+        SocketState getState() const;
 
-    int getDescriptor() const;
+        int getDescriptor() const;
 
-    boost::signals2::signal<void ()> readyRead;
-    boost::signals2::signal<void ()> connected;
+        boost::signals2::signal<void ()> readyRead;
+        boost::signals2::signal<void ()> connected;
 
-    void setConnected();
-    void readFromSocket();
-protected:
-    boost::asio::streambuf buffer_;
-private:
-    SocketFacade* socket_interface_;
+        void setConnected();
+        void readFromSocket();
+    protected:
+        boost::asio::streambuf buffer_;
+    private:
+        SocketFacade* socket_interface_;
 
-    int socket_;
-    SocketState state_;
-    SocketError error_;
+        int socket_;
+        SocketState state_;
+        SocketError error_;
 
-    void setState(SocketState state);
-    void setError(SocketError error);
+        void setState(SocketState state);
+        void setError(SocketError error);
 
-    int privateRead(char* buffer, unsigned int size);
-    int socketAvailableBytes() const;
-
-};
+        int privateRead(char* buffer, unsigned int size);
+        int socketAvailableBytes() const;
+    };
+}
 
 
 #endif //TIN_TCPSOCKET_H

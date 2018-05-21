@@ -17,41 +17,42 @@
 
 #include "TCPSocket.h"
 
-class TCPServer {
-public:
-    TCPServer(SocketFacade* socket_interface);
-    TCPServer(SocketFacade* socket_interface, int socket);
-    TCPServer(TCPServer&) = delete;
-    TCPServer(TCPServer&& other);
-    TCPServer& operator=(TCPServer&) = delete;
-    TCPServer& operator=(TCPServer&& other);
+namespace Sockets {
+    class TCPServer {
+    public:
+        TCPServer(SocketFacade *socket_interface);
+        TCPServer(SocketFacade *socket_interface, int socket);
+        TCPServer(TCPServer &) = delete;
+        TCPServer(TCPServer &&other);
+        TCPServer &operator=(TCPServer &) = delete;
+        TCPServer &operator=(TCPServer &&other);
+        ~TCPServer();
 
-    ~TCPServer();
+        void close();
 
-    void close();
+        bool listen(in6_addr address, uint16_t server_port);
+        bool listen(uint16_t server_port);
+        bool listen(IP address, uint16_t server_port);
+        bool listen(DNS address, uint16_t server_port);
 
-    bool listen(in6_addr address, uint16_t server_port);
-    bool listen(uint16_t server_port);
-    bool listen(IP address, uint16_t server_port);
-    bool listen(DNS address, uint16_t server_port);
+        bool waitForConnection(int ms);
 
-    bool waitForConnection(int ms);
+        std::shared_ptr<TCPSocket> accept();
+        uint16_t port() const;
 
-    std::shared_ptr<TCPSocket> accept();
-    uint16_t port() const;
+        int getDescriptor() const;
 
-    int getDescriptor() const;
+        boost::signals2::signal<void()> incomingConnection;
+    private:
+        SocketFacade *socket_interface_;
 
-    boost::signals2::signal<void ()> incomingConnection;
-private:
-    SocketFacade* socket_interface_;
+        int socket_;
+        bool closed_;
+        SocketError error_;
 
-    int socket_;
-    bool closed_;
-    SocketError error_;
-
-    void setError(SocketError error);
-};
+        void setError(SocketError error);
+    };
+}
 
 
 #endif //TIN_TCPSERVER_H
