@@ -9,6 +9,7 @@
 #include <boost/archive/text_oarchive.hpp>
 
 #include <queue/FileStorage.h>
+#include <queue/Exceptions.h>
 
 using namespace Queue;
 namespace fs = boost::filesystem;
@@ -24,33 +25,54 @@ FileStorage::FileStorage(const std::string& root_path): _root(root_path) {
 
 
 void FileStorage::add(const Message& mess) {
-    // todo error if file already exists
+    auto file_path = makePath(mess);
+    
+    if(_files.find(file_path) != _files.end()){
+        throw FileExists(file_path);
+    }
+
     std::fstream file;
-    file.open(makePath(mess), std::fstream::out);
+    file.open(file_path, std::fstream::out);
+    
     boost::archive::text_oarchive o_archive(file);
     o_archive << mess;
+    
     file.close();
-    _files.insert(makePath(mess));
+    _files.insert(file_path);
 }
 
 void FileStorage::add(int id, const std::string& data) {
+    auto file_path = makePath(id);
+
+    if (_files.find(file_path) != _files.end()) {
+        throw FileExists(file_path);
+    }
+
     std::fstream file;
-    file.open(makePath(id), std::fstream::out);
+    file.open(file_path, std::fstream::out);
     file << data;
     file.close();
-    _files.insert(makePath(id));
+    _files.insert(file_path);
 }
 
 void FileStorage::remove(int id) {
-    // todo error if file doesn't exists
+    auto file_path = makePath(id);
+    if(_files.find(file_path) == _files.end()) {
+        throw FileDoesNotExist(file_path);
+    }
+    
     boost::filesystem::remove(
-            boost::filesystem::path(makePath(id)));
-    _files.erase(makePath(id));
+            boost::filesystem::path(file_path));
+    
+    _files.erase(file_path);
 }
 
 std::vector<Message> FileStorage::getAll() {
-    // todo implement me
-    return std::vector<Message>();
+    std::vector<Message> mess;
+    for(auto& m: *this) {
+        mess.push_back(m);
+    }
+    return mess;
 }
 
 
@@ -107,9 +129,13 @@ Message* FileStorage::Iterator::operator->() const {
 }
 
 Message* FileStorage::Iterator::readFile() const {
-    std::fstream file(*_curr, std::fstream::in);
+    std::fstream file;
+    file.open(*_curr, std::fstream::in);
+    
     std::string data;
     file >> data;
+    
+    file.close();
     return Message::fromString(data);
 }
 

@@ -16,9 +16,6 @@ namespace Queue {
 
     class FileStorage: public Storage {
     public:
-        // todo file names caching
-        // todo implement iterator
-
         explicit FileStorage(std::string&& root_path);
         explicit FileStorage(const std::string& root_path);
 
