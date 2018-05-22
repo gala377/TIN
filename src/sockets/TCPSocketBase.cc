@@ -53,9 +53,10 @@ namespace Sockets {
     bool TCPSocketBase::connect(in6_addr address, uint16_t port) {
         struct sockaddr_in6 server = createAddress(address, port);
         if (socket_interface_->connect(socket_, (struct sockaddr *) &server, sizeof(server)) == -1) {
+            std::cout << "Connect error " << strerror(socket_interface_->getErrno());
             switch (socket_interface_->getErrno()) {
                 case EISCONN:
-                    setState(SocketState::CONNECTED);
+                    setConnected();
                     break;
                 case ECONNREFUSED:
                 case EINVAL:
@@ -98,7 +99,7 @@ namespace Sockets {
             }
             return false;
         }
-        setState(SocketState::CONNECTED);
+        setConnected();
         return true;
     }
 
@@ -142,6 +143,7 @@ namespace Sockets {
     int TCPSocketBase::privateRead(char *buffer, unsigned int size) {
         int status = socket_interface_->read(socket_, buffer, size);
         if (status == -1) {
+            std::cout << strerror(socket_interface_->getErrno());
             switch (socket_interface_->getErrno()) {
                 case EAGAIN: //non-blocking - no data - zwróć 0 bez żadnych błędów
                     status = 0;

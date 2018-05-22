@@ -67,9 +67,11 @@ namespace Sockets {
                 }
             });
             std::for_each(sockets_.begin(), sockets_.end(), [&](auto socket) {
-                if (socket.first > biggest_descriptor)
-                    biggest_descriptor = socket.first;
-                FD_SET(socket.first, &set);
+                if(socket.second->getState() == SocketState::CONNECTED) {
+                    if (socket.first > biggest_descriptor)
+                        biggest_descriptor = socket.first;
+                    FD_SET(socket.first, &set);
+                }
             });
             std::for_each(servers_.begin(), servers_.end(), [&](auto server) {
                 if (server.first > biggest_descriptor)
@@ -89,7 +91,9 @@ namespace Sockets {
             std::for_each(sockets_.begin(), sockets_.end(), [&](auto socket) {
                 if (FD_ISSET(socket.first, &write_set)) {
                     if(socket.second->getState() == SocketState::CONNECTING) {
-                        socket.second->setConnected();
+                        std::cout << "State was Connecting\n";
+                        socket.second->connect(IP({"::1"}), 56011);
+                        //socket.second->setConnected();
                     }
                 }
             });
