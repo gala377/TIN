@@ -36,3 +36,19 @@ void FDSet::addExcept(int fd) {
 bool FDSet::isSetExcept(int fd) {
     return FD_ISSET(fd, &except_);
 }
+
+fd_set* FDSet::getRead() {
+    return &read_;
+}
+
+fd_set* FDSet::getWrite() {
+    return &write_;
+}
+
+fd_set* FDSet::getExcept() {
+    return &except_;
+}
+
+int FDSet::getBiggestDescriptor() {
+    return biggest_descriptor_;
+}

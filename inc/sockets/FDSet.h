@@ -18,6 +18,10 @@ public:
     FDSet();
     ~FDSet();
 
+    fd_set* getRead();
+    fd_set* getWrite();
+    fd_set* getExcept();
+
     void addRead(int fd);
     bool isSetRead(int fd);
     void addWrite(int fd);
