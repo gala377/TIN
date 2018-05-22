@@ -112,6 +112,8 @@ FileStorage::Iterator FileStorage::end() const {
 FileStorage::Iterator::Iterator(std::set<std::string>::const_iterator curr_file,
                                 const FileStorage& parent): _parent(parent), _curr(curr_file) { }
 
+
+
 bool FileStorage::Iterator::operator==(const FileStorage::Iterator& iterator) const {
     return _curr == iterator._curr;
 }
