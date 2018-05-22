@@ -54,33 +54,24 @@ namespace Sockets {
 
     void SocketSupervisor::loop() {
         while(running_) {
-            int biggest_descriptor = pipe_output_;
-            fd_set set;
-            FD_ZERO(&set);
-            fd_set write_set;
-            FD_ZERO(&write_set);
+            FDSet fd_set;
+
             std::for_each(sockets_.begin(), sockets_.end(), [&](auto socket) {
                 if(socket.second->getState() == SocketState::CONNECTING) {
-                    if (socket.first > biggest_descriptor)
-                        biggest_descriptor = socket.first;
-                    FD_SET(socket.first, &write_set);
+                    fd_set.addWrite(socket.first);
                 }
             });
             std::for_each(sockets_.begin(), sockets_.end(), [&](auto socket) {
                 if(socket.second->getState() == SocketState::CONNECTED) {
-                    if (socket.first > biggest_descriptor)
-                        biggest_descriptor = socket.first;
-                    FD_SET(socket.first, &set);
+                    fd_set.addRead(socket.first);
                 }
             });
             std::for_each(servers_.begin(), servers_.end(), [&](auto server) {
-                if (server.first > biggest_descriptor)
-                    biggest_descriptor = server.first;
-                FD_SET(server.first, &set);
+                fd_set.addRead(server.first);
             });
-            FD_SET(pipe_output_, &set);
-            select(biggest_descriptor + 1, &set, &write_set, NULL, NULL);
-            if (FD_ISSET(pipe_output_, &set)) {
+            fd_set.addRead(pipe_output_);
+            select(fd_set.getBiggestDescriptor() + 1, fd_set.getRead(), fd_set.getWrite(), fd_set.getExcept(), NULL);
+            if(fd_set.isSetRead(pipe_output_)) {
                 char character;
                 while (true) {
                     if (read(pipe_output_, &character, 1) == -1) {
@@ -89,7 +80,7 @@ namespace Sockets {
                 }
             }
             std::for_each(sockets_.begin(), sockets_.end(), [&](auto socket) {
-                if (FD_ISSET(socket.first, &write_set)) {
+                if(fd_set.isSetWrite(socket.first)) {
                     std::cout << "Write selected " << socket.first << "\n";
                     if(socket.second->getState() == SocketState::CONNECTING) {
                         std::cout << "State was Connecting\n";
@@ -99,14 +90,14 @@ namespace Sockets {
                 }
             });
             std::for_each(sockets_.begin(), sockets_.end(), [&](auto socket) {
-                if (FD_ISSET(socket.first, &set)) {
+                if(fd_set.isSetRead(socket.first)) {
                     std::cout << "Read selected " << socket.first << "\n";
                     socket.second->readFromSocket();
                     socket.second->readyRead();
                 }
             });
             std::for_each(servers_.begin(), servers_.end(), [&](auto server) {
-                if (FD_ISSET(server.first, &set)) {
+                if(fd_set.isSetRead(server.first)) {
                     server.second->incomingConnection();
                 }
             });

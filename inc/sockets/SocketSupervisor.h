@@ -9,8 +9,10 @@
 #include <thread>
 #include <unordered_map>
 #include <csignal>
+
 #include "TCPServer.h"
 #include "TCPSocketBase.h"
+#include "FDSet.h"
 
 namespace Sockets {
     class SocketSupervisor {
