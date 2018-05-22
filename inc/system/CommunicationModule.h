@@ -1,0 +1,10 @@
+//
+// Created by gajus123 on 16.04.18.
+//
+
+#ifndef TIN_COMMUNICATIONMODULE_H
+#define TIN_COMMUNICATIONMODULE_H
+
+
+
+#endif //TIN_COMMUNICATIONMODULE_H
