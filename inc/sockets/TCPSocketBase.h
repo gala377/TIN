@@ -24,6 +24,7 @@ namespace Sockets {
     public:
         TCPSocketBase(SocketFacade* socket_interface);
         TCPSocketBase(SocketFacade* socket_interface, int socket, SocketState state = SocketState::CONNECTED);
+        TCPSocketBase(SocketFacade* socket_interface, int socket, in6_addr address, uint16_t port, SocketState state = SocketState::CONNECTED);
         TCPSocketBase(TCPSocketBase&) = delete;
         TCPSocketBase(TCPSocketBase&& other);
         TCPSocketBase& operator=(TCPSocketBase&) = delete;
@@ -36,6 +37,7 @@ namespace Sockets {
         bool connect(in6_addr address, uint16_t port);
         bool connect(IP address, uint16_t port);
         bool connect(DNS address, uint16_t port);
+        bool connect();
 
         uint16_t port() const;
 
@@ -65,6 +67,9 @@ namespace Sockets {
         int socket_;
         SocketState state_;
         SocketError error_;
+
+        in6_addr address_;
+        uint16_t port_;
 
         void setState(SocketState state);
         void setError(SocketError error);

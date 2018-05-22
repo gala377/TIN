@@ -10,8 +10,8 @@ namespace Sockets {
         createMessageHandler();
     }
 
-    TCPSocket::TCPSocket(SocketFacade *socket_interface, int socket, SocketState state) :
-            TCPSocketBase(socket_interface, socket, state) {
+    TCPSocket::TCPSocket(SocketFacade *socket_interface, int socket, in6_addr address, uint16_t port, SocketState state) :
+            TCPSocketBase(socket_interface, socket, address, port, state) {
         createMessageHandler();
     }
 

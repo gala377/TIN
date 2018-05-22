@@ -14,10 +14,12 @@ namespace Sockets {
         socket_interface_->setFlags(socket_, O_NONBLOCK);
     }
 
-    TCPSocketBase::TCPSocketBase(SocketFacade *socket_interface, int socket, SocketState state) :
+    TCPSocketBase::TCPSocketBase(SocketFacade *socket_interface, int socket, in6_addr address, uint16_t port, SocketState state) :
             socket_interface_(socket_interface),
             socket_(socket),
-            state_(state) {
+            state_(state),
+            address_(address),
+            port_(port) {
     }
 
     TCPSocketBase::~TCPSocketBase() {
@@ -27,6 +29,8 @@ namespace Sockets {
     TCPSocketBase::TCPSocketBase(TCPSocketBase &&other) {
         socket_ = other.socket_;
         state_ = other.state_;
+        address_ = other.address_;
+        port_ = other.port_;
         other.socket_ = -1;
     }
 
@@ -34,6 +38,8 @@ namespace Sockets {
         close();
         socket_ = other.socket_;
         state_ = other.state_;
+        address_ = other.address_;
+        port_ = other.port_;
         other.socket_ = -1;
 
         return *this;
@@ -52,9 +58,11 @@ namespace Sockets {
     }
 
     bool TCPSocketBase::connect(in6_addr address, uint16_t port) {
+        address_ = address;
+        port_ = port;
         struct sockaddr_in6 server = createAddress(address, port);
         if (socket_interface_->connect(socket_, (struct sockaddr *) &server, sizeof(server)) == -1) {
-            std::cout << "Connect error " << strerror(socket_interface_->getErrno()) << "\n";
+            //std::cout << "Connect error " << strerror(socket_interface_->getErrno()) << "\n";
             switch (socket_interface_->getErrno()) {
                 case EISCONN:
                     setConnected();
@@ -104,6 +112,12 @@ namespace Sockets {
         return true;
     }
 
+    bool TCPSocketBase::connect() {
+        if(getState() == SocketState::CONNECTING)
+            return connect(address_, port_);
+        return false;
+    }
+
     bool TCPSocketBase::connect(IP address, uint16_t port) {
         return connect(ip(address), port);
     }
@@ -123,12 +137,12 @@ namespace Sockets {
     }
 
     int TCPSocketBase::write(char *buffer, unsigned int size) {
-        std::cout << "Write " << socket_ << "\n";
+        //std::cout << "Write " << socket_ << "\n";
         if (size == 0)
             return 0;
         int status = socket_interface_->write(socket_, buffer, size);
         if (status == -1) {
-            std::cout << "Write error " << strerror(socket_interface_->getErrno()) << "\n";
+            //std::cout << "Write error " << strerror(socket_interface_->getErrno()) << "\n";
             switch (socket_interface_->getErrno()) {
                 case EPIPE:
                 case ECONNRESET:
@@ -146,7 +160,7 @@ namespace Sockets {
     int TCPSocketBase::privateRead(char *buffer, unsigned int size) {
         int status = socket_interface_->read(socket_, buffer, size);
         if (status == -1) {
-            std::cout << strerror(socket_interface_->getErrno());
+            //std::cout << strerror(socket_interface_->getErrno());
             switch (socket_interface_->getErrno()) {
                 case EAGAIN: //non-blocking - no data - return 0 without error
                     status = 0;

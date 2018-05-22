@@ -18,7 +18,7 @@ namespace Sockets {
     class TCPSocket : public TCPSocketBase {
     public:
         TCPSocket(SocketFacade *socket_interface);
-        TCPSocket(SocketFacade *socket_interface, int socket, SocketState state = SocketState::CONNECTED);
+        TCPSocket(SocketFacade *socket_interface, int socket, in6_addr address, uint16_t port, SocketState state = SocketState::CONNECTED);
         TCPSocket(TCPSocket &) = delete;
         TCPSocket(TCPSocket &&other);
         TCPSocket &operator=(TCPSocket &) = delete;
