@@ -69,10 +69,10 @@ void FileStorage::remove(int id) {
     _files.erase(file_path);
 }
 
-std::vector<Message> FileStorage::getAll() {
-    std::vector<Message> mess;
-    for(auto& m: *this) {
-        mess.push_back(m);
+std::vector<Message*> FileStorage::getAll() {
+    std::vector<Message*> mess;
+    for(auto it = begin(); it != end(); ++it) {
+        mess.push_back(*it);
     }
     return mess;
 }

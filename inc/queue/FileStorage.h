@@ -61,7 +61,7 @@ namespace Queue {
         *   Resturns collection of all messages stored
         *   under @member _root;
         */
-        std::vector<Message> getAll() override;
+        std::vector<Message*> getAll() override;
 
         /*
         *   Forward iterator for range loop support.

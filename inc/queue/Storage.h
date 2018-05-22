@@ -17,7 +17,7 @@ namespace Queue {
         virtual void add(const Message& mess) = 0;
         virtual void remove(int id) = 0;
 
-        virtual std::vector<Message> getAll() = 0;
+        virtual std::vector<Message*> getAll() = 0;
     };
 }
 
