@@ -37,7 +37,9 @@ namespace Queue {
         *   Adds file under @member _root path.
         * 
         *   Files' name is Messages' @member id_.
-        *   Files content is serialized Message.    
+        *   Files content is serialized Message.
+        *   
+        *   Throws FileExists if file path is cached.
         */
         void add(const Message& mess) override;
         /*
@@ -49,6 +51,9 @@ namespace Queue {
         /*
         *   Removes file corresponding to @param id 
         *   from the path specified in @member _root;
+        * 
+        *   Throws FileDoesNotExist if file is not present
+        *   in cache. 
         */
         void remove(int id) override;
 
