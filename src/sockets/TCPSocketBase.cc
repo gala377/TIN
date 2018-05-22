@@ -145,7 +145,7 @@ namespace Sockets {
         if (status == -1) {
             std::cout << strerror(socket_interface_->getErrno());
             switch (socket_interface_->getErrno()) {
-                case EAGAIN: //non-blocking - no data - zwróć 0 bez żadnych błędów
+                case EAGAIN: //non-blocking - no data - return 0 without error
                     status = 0;
                     break;
                 case ECONNRESET: //connection closed - close() this side and return -1
