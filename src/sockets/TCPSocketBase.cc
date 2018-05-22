@@ -47,13 +47,14 @@ namespace Sockets {
                 return;
             }
             socket_ = -1;
+            setState(SocketState::UNCONNECTED);
         }
     }
 
     bool TCPSocketBase::connect(in6_addr address, uint16_t port) {
         struct sockaddr_in6 server = createAddress(address, port);
         if (socket_interface_->connect(socket_, (struct sockaddr *) &server, sizeof(server)) == -1) {
-            std::cout << "Connect error " << strerror(socket_interface_->getErrno());
+            std::cout << "Connect error " << strerror(socket_interface_->getErrno()) << "\n";
             switch (socket_interface_->getErrno()) {
                 case EISCONN:
                     setConnected();
@@ -122,10 +123,12 @@ namespace Sockets {
     }
 
     int TCPSocketBase::write(char *buffer, unsigned int size) {
+        std::cout << "Write " << socket_ << "\n";
         if (size == 0)
             return 0;
         int status = socket_interface_->write(socket_, buffer, size);
         if (status == -1) {
+            std::cout << "Write error " << strerror(socket_interface_->getErrno()) << "\n";
             switch (socket_interface_->getErrno()) {
                 case EPIPE:
                 case ECONNRESET:
@@ -202,9 +205,15 @@ namespace Sockets {
 
     void TCPSocketBase::readFromSocket() {
         int bytes = socketAvailableBytes();
-        char *buffer = new char[bytes];
-        privateRead(buffer, bytes);
-        buffer_.sputn(buffer, bytes);
+        if(bytes == 0) {
+            close();
+            disconnected();
+        }
+        else {
+            char *buffer = new char[bytes];
+            privateRead(buffer, bytes);
+            buffer_.sputn(buffer, bytes);
+        }
     }
 
     int TCPSocketBase::socketAvailableBytes() const {

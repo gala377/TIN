@@ -60,7 +60,7 @@ namespace Sockets {
             fd_set write_set;
             FD_ZERO(&write_set);
             std::for_each(sockets_.begin(), sockets_.end(), [&](auto socket) {
-                if(socket.second->getState() != SocketState::CONNECTED) {
+                if(socket.second->getState() == SocketState::CONNECTING) {
                     if (socket.first > biggest_descriptor)
                         biggest_descriptor = socket.first;
                     FD_SET(socket.first, &write_set);
@@ -90,6 +90,7 @@ namespace Sockets {
             }
             std::for_each(sockets_.begin(), sockets_.end(), [&](auto socket) {
                 if (FD_ISSET(socket.first, &write_set)) {
+                    std::cout << "Write selected " << socket.first << "\n";
                     if(socket.second->getState() == SocketState::CONNECTING) {
                         std::cout << "State was Connecting\n";
                         socket.second->connect(IP({"::1"}), 56011);
@@ -99,6 +100,7 @@ namespace Sockets {
             });
             std::for_each(sockets_.begin(), sockets_.end(), [&](auto socket) {
                 if (FD_ISSET(socket.first, &set)) {
+                    std::cout << "Read selected " << socket.first << "\n";
                     socket.second->readFromSocket();
                     socket.second->readyRead();
                 }

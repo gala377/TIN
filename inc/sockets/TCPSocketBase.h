@@ -53,6 +53,7 @@ namespace Sockets {
 
         boost::signals2::signal<void ()> readyRead;
         boost::signals2::signal<void ()> connected;
+        boost::signals2::signal<void ()> disconnected;
 
         void setConnected();
         void readFromSocket();
