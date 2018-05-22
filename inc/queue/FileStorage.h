@@ -30,15 +30,25 @@ namespace Queue {
 
         class Iterator {
         public:
-            Iterator();
+            friend class FileStorage;
 
             bool operator==(const Iterator& iterator) const;
             bool operator!=(const Iterator& iterator) const;
 
-            Message operator*() const;
-            Message operator->() const;
+            Message* operator*() const;
+            Message* operator->() const;
 
             Iterator& operator++();
+
+        private:
+            std::set<std::string>::const_iterator _curr;
+            const FileStorage& _parent;
+
+            Iterator(std::set<std::string>::const_iterator curr_file,
+                     const FileStorage& parent);
+
+            Message* readFile() const;
+
         };
 
         friend class Iterator;
@@ -50,6 +60,7 @@ namespace Queue {
 
     protected:
         boost::filesystem::path _root;
+        std::set<std::string> _files;
 
         std::string makePath(const Message& mess) const;
         std::string makePath(int id) const;

@@ -13,6 +13,7 @@
 using namespace Queue;
 namespace fs = boost::filesystem;
 
+
 FileStorage::FileStorage(std::string&& root_path): _root(root_path) {
     boost::filesystem::create_directory(_root);
 }
@@ -29,6 +30,7 @@ void FileStorage::add(const Message& mess) {
     boost::archive::text_oarchive o_archive(file);
     o_archive << mess;
     file.close();
+    _files.insert(makePath(mess));
 }
 
 void FileStorage::add(int id, const std::string& data) {
@@ -36,15 +38,18 @@ void FileStorage::add(int id, const std::string& data) {
     file.open(makePath(id), std::fstream::out);
     file << data;
     file.close();
+    _files.insert(makePath(id));
 }
 
 void FileStorage::remove(int id) {
     // todo error if file doesn't exists
     boost::filesystem::remove(
             boost::filesystem::path(makePath(id)));
+    _files.erase(makePath(id));
 }
 
 std::vector<Message> FileStorage::getAll() {
+    // todo implement me
     return std::vector<Message>();
 }
 
@@ -63,6 +68,7 @@ std::string FileStorage::padInt(int num) const {
     return padded;
 }
 
+
 std::set<std::string> FileStorage::listFiles() const {
     std::set<std::string> files;
     for(auto& p: boost::make_iterator_range(fs::directory_iterator(_root))) {
@@ -73,36 +79,41 @@ std::set<std::string> FileStorage::listFiles() const {
 
 
 FileStorage::Iterator FileStorage::begin() const {
-    return FileStorage::Iterator();
+    return FileStorage::Iterator(_files.begin(), *this);
 }
 
 FileStorage::Iterator FileStorage::end() const {
-    return FileStorage::Iterator();
+    return FileStorage::Iterator(_files.end(), *this);
 }
 
 
-
-FileStorage::Iterator::Iterator() {
-
-}
+FileStorage::Iterator::Iterator(std::set<std::string>::const_iterator curr_file,
+                                const FileStorage& parent): _parent(parent), _curr(curr_file) { }
 
 bool FileStorage::Iterator::operator==(const FileStorage::Iterator& iterator) const {
-    return false;
+    return _curr == iterator._curr;
 }
 
 bool FileStorage::Iterator::operator!=(const FileStorage::Iterator& iterator) const {
-    return false;
+    return !(*this == iterator);
 }
 
-Message FileStorage::Iterator::operator*() const {
-    return *Message::fromString("");
+Message* FileStorage::Iterator::operator*() const {
+    return readFile();
 }
 
-Message FileStorage::Iterator::operator->() const {
-    return *Message::fromString("");
+Message* FileStorage::Iterator::operator->() const {
+    return readFile();
+}
+
+Message* FileStorage::Iterator::readFile() const {
+    std::fstream file(*_curr, std::fstream::in);
+    std::string data;
+    file >> data;
+    return Message::fromString(data);
 }
 
 FileStorage::Iterator& FileStorage::Iterator::operator++() {
-    return *this;
+    ++_curr;
 }
 

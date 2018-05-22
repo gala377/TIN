@@ -19,19 +19,9 @@ int main() {
     storage.add(3, "test_3");
     storage.add(11, "test_4");
 
-    std::cout << "Files stored\n";
-    for(auto& file: storage.listFiles()) {
-        std::cout << file << "\n";
+    for(Queue::FileStorage::Iterator it = storage.begin();
+            it != storage.end();
+            ++it) {
+        std::cout << "next it\n";
     }
-    std::cin >> c;
-
-    storage.remove(0);
-
-    std::cout << "One file removed\n";
-    std::cin >> c;
-
-    storage.remove(2);
-    storage.remove(3);
-
-    std::cout << "2 files removed\n";
 }
