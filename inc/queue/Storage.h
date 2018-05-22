@@ -8,7 +8,10 @@
 #include <messages/Message.h>
 
 namespace Queue {
-
+    /*
+    *   Interface for @class Message storage.
+    *   Useful for mocking purposes.
+    */
     class Storage {
     public:
         virtual void add(const Message& mess) = 0;

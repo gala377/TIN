@@ -13,18 +13,56 @@
 
 
 namespace Queue {
-
+    
+    /*
+    *   File system implementation of Storage interface.
+    *   FileStorage saves messages as files
+    *   in the path specified upon creation of
+    *   the object.
+    */
     class FileStorage: public Storage {
     public:
+        /*
+        *   Creates directory tree from @param path 
+        *   upon creation. Saves it in @member _root.
+        *  
+        *   If directory already exists populates itself
+        *   with files that are already existing inside
+        *   the directory.
+        */
         explicit FileStorage(std::string&& root_path);
         explicit FileStorage(const std::string& root_path);
 
+        /*
+        *   Adds file under @member _root path.
+        * 
+        *   Files' name is Messages' @member id_.
+        *   Files content is serialized Message.    
+        */
         void add(const Message& mess) override;
+        /*
+        *   As before, just files name is @param id
+        *   and files content is @param data.
+        */
         void add(int id, const std::string& data);
+
+        /*
+        *   Removes file corresponding to @param id 
+        *   from the path specified in @member _root;
+        */
         void remove(int id) override;
 
+        /*
+        *   Resturns collection of all messages stored
+        *   under @member _root;
+        */
         std::vector<Message> getAll() override;
 
+        /*
+        *   Forward iterator for range loop support.
+        *   Iterates over files stored under @member _root.
+        *   Indirection (*) operator returns Message* stored in file.
+        */
         class Iterator {
         public:
             friend class FileStorage;
@@ -33,7 +71,6 @@ namespace Queue {
             bool operator!=(const Iterator& iterator) const;
 
             Message* operator*() const;
-            Message* operator->() const;
 
             Iterator& operator++();
 
@@ -50,10 +87,26 @@ namespace Queue {
 
         friend class Iterator;
 
+        /*
+        *   Methods for range loop support
+        */
         Iterator begin() const;
         Iterator end() const;
 
+        /*
+        *   Returns all files under @member _root.
+        *   
+        *   Important -iterators and getAll method
+        *   base on cached directory list.
+        *   This method checks for directories as it is.
+        *   So contents between those three can vary. 
+        */ 
         std::set<std::string> listFiles() const;
+
+        /*
+        *   Refreshes cached file names.
+        */ 
+        void updateCachedFiles();
 
     protected:
         boost::filesystem::path _root;

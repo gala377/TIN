@@ -17,10 +17,12 @@ namespace fs = boost::filesystem;
 
 FileStorage::FileStorage(std::string&& root_path): _root(root_path) {
     boost::filesystem::create_directory(_root);
+    _files = listFiles();
 }
 
 FileStorage::FileStorage(const std::string& root_path): _root(root_path) {
     boost::filesystem::create_directory(_root);
+    _files = listFiles();
 }
 
 
@@ -99,6 +101,9 @@ std::set<std::string> FileStorage::listFiles() const {
     return files;
 }
 
+void FileStorage::updateCachedFiles() {
+    _files = listFiles();
+}
 
 FileStorage::Iterator FileStorage::begin() const {
     return FileStorage::Iterator(_files.begin(), *this);
@@ -123,10 +128,6 @@ bool FileStorage::Iterator::operator!=(const FileStorage::Iterator& iterator) co
 }
 
 Message* FileStorage::Iterator::operator*() const {
-    return readFile();
-}
-
-Message* FileStorage::Iterator::operator->() const {
     return readFile();
 }
 
