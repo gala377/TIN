@@ -81,17 +81,15 @@ namespace Sockets {
             }
             std::for_each(sockets_.begin(), sockets_.end(), [&](auto socket) {
                 if(fd_set.isSetWrite(socket.first)) {
-                    std::cout << "Write selected " << socket.first << "\n";
                     if(socket.second->getState() == SocketState::CONNECTING) {
-                        std::cout << "State was Connecting\n";
-                        socket.second->connect(IP({"::1"}), 56011);
+                        socket.second->connect();
+                        //socket.second->connect(IP({"::1"}), 56011);
                         //socket.second->setConnected();
                     }
                 }
             });
             std::for_each(sockets_.begin(), sockets_.end(), [&](auto socket) {
                 if(fd_set.isSetRead(socket.first)) {
-                    std::cout << "Read selected " << socket.first << "\n";
                     socket.second->readFromSocket();
                     socket.second->readyRead();
                 }
