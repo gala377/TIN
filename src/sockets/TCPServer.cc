@@ -56,7 +56,8 @@ namespace Sockets {
     bool TCPServer::listen(in6_addr address, uint16_t server_port) {
         struct sockaddr_in6 server = createAddress(address, server_port);
         if (socket_interface_->bind(socket_, (struct sockaddr *) &server, sizeof(server)) == -1) {
-            std::cout << strerror(socket_interface_->getErrno()) << "\n";
+            throw SocketInitializationException();
+            //std::cout << strerror(socket_interface_->getErrno()) << "\n";
             switch (socket_interface_->getErrno()) {
                 case EADDRINUSE:
                     setError(SocketError::ADDRESS_IN_USE);
@@ -75,6 +76,7 @@ namespace Sockets {
         }
 
         if (socket_interface_->listen(socket_, 1) == -1) {
+            throw SocketInitializationException();
             switch (socket_interface_->getErrno()) {
                 case EADDRINUSE:
                     setError(SocketError::ADDRESS_IN_USE);
@@ -102,7 +104,7 @@ namespace Sockets {
         socklen_t lenght;
         int status = socket_interface_->accept(socket_, (struct sockaddr *) &address, (socklen_t *) &lenght);
         if (status == -1) {
-            std::cout << strerror(socket_interface_->getErrno()) << "\n";
+            std::cout << "[Accept] " << strerror(socket_interface_->getErrno()) << "\n";
             switch (errno) {
                 case EBADF:
                 case EOPNOTSUPP:
