@@ -21,14 +21,22 @@ public:
     ~CommunicationModule();
 
     static CommunicationModule createServer(uint16_t port);
-    static CommunicationModule createClient(uint16_t port, Sockets::IP address);
+    static CommunicationModule createClient(uint16_t port, Sockets::IP address, uint16_t server_port);
+
+    boost::signals2::signal<void()> incommingMessage;
 private:
     CommunicationModule(uint16_t port);
+
+    void prepareSocket();
 
     Sockets::SocketUnix socket_facade_;
     Sockets::TCPServer server_;
     std::shared_ptr<Sockets::TCPSocket> socket_;
     Sockets::SocketSupervisor supervisor_;
+
+    enum class State {
+        UNCONNECTED, CONNECTED, DISCONNECTED
+    } state_;
 };
 
 #endif //TIN_COMMUNICATIONMODULE_H
