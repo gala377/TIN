@@ -11,7 +11,7 @@ Message::Message() :
 Message::~Message() {
 }
 
-std::string Message::toString() {
+std::string Message::toString() const {
     std::string result;
     boost::iostreams::back_insert_device<std::string> inserter(result);
     boost::iostreams::stream<boost::iostreams::back_insert_device<std::string> > s(inserter);

@@ -16,8 +16,13 @@ include_directories(./inc)
 set(SOURCE_FILES src/Example.cc src/sockets/TCPServer.cc  src/sockets/TCPSocketBase.cc
         src/sockets/SocketSupervisor.cc src/sockets/SocketUnix.cc src/sockets/TCPSocketWithPacket.cc
          src/messages/Message.cc  src/messages/Acknowledge.cc src/sockets/TCPSocket.cc
-        tests/messages/test_Acknowledge.cc src/qeueu/FileStorage.cc src/qeueu/Exceptions.cc)
-add_executable(TIN ${SOURCE_FILES})
+        tests/queue/testFileStorage.cc tests/messages/test_Acknowledge.cc src/queue/FileStorage.cc src/queue/Exceptions.cc tests/queue/testFileStorage.cc)
+set(TEST_SOURCE_FILES tests/tests_main.cc src/sockets/TCPServer.cc  src/sockets/TCPSocketBase.cc
+        src/sockets/SocketSupervisor.cc src/sockets/SocketUnix.cc src/sockets/TCPSocketWithPacket.cc
+        src/messages/Message.cc  src/messages/Acknowledge.cc src/sockets/TCPSocket.cc
+        tests/queue/testFileStorage.cc tests/messages/test_Acknowledge.cc src/queue/FileStorage.cc src/queue/Exceptions.cc tests/queue/testFileStorage.cc)
+
+add_executable(TIN ${TEST_SOURCE_FILES})
 
 if(Boost_FOUND)
     target_link_libraries(TIN ${Boost_LIBRARIES})

@@ -28,17 +28,17 @@ FileStorage::FileStorage(const std::string& root_path): _root(root_path) {
 
 void FileStorage::add(const Message& mess) {
     auto file_path = makePath(mess);
-    
+
     if(_files.find(file_path) != _files.end()){
         throw FileExists(file_path);
     }
 
     std::fstream file;
     file.open(file_path, std::fstream::out);
-    
+
     boost::archive::text_oarchive o_archive(file);
     o_archive << mess;
-    
+
     file.close();
     _files.insert(file_path);
 }
@@ -62,10 +62,10 @@ void FileStorage::remove(int id) {
     if(_files.find(file_path) == _files.end()) {
         throw FileDoesNotExist(file_path);
     }
-    
+
     boost::filesystem::remove(
             boost::filesystem::path(file_path));
-    
+
     _files.erase(file_path);
 }
 
@@ -134,10 +134,10 @@ Message* FileStorage::Iterator::operator*() const {
 Message* FileStorage::Iterator::readFile() const {
     std::fstream file;
     file.open(*_curr, std::fstream::in);
-    
+
     std::string data;
     file >> data;
-    
+
     file.close();
     return Message::fromString(data);
 }
