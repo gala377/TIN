@@ -59,7 +59,7 @@ namespace Sockets {
         boost::signals2::signal<void ()> disconnected;
 
         void setConnected();
-        void readFromSocket();
+        bool readFromSocket();
     protected:
         boost::asio::streambuf buffer_;
     private:

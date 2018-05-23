@@ -126,7 +126,7 @@ namespace Sockets {
         return connect(ip(address), port);
     }
 
-    uint16_t TCPSocketBase::port() const {  
+    uint16_t TCPSocketBase::port() const {
         return port_;
     }
 
@@ -221,16 +221,18 @@ namespace Sockets {
         return socket_;
     }
 
-    void TCPSocketBase::readFromSocket() {
+    bool TCPSocketBase::readFromSocket() {
         int bytes = socketAvailableBytes();
         if(bytes == 0) {
             close();
             disconnected();
+            return false;
         }
         else {
             char *buffer = new char[bytes];
             privateRead(buffer, bytes);
             buffer_.sputn(buffer, bytes);
+            return true;
         }
     }
 
