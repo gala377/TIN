@@ -29,7 +29,7 @@ TEST(FileStorageTest, RestoreMessage) {
 
 }
 
-TEST(FileStorageTest, LoadMessagesFromMemoryWhenStorageIsEmpty) {
+TEST(FileStorageTest, LoadMessagesToMemoryWhenStorageIsEmpty) {
     std::string path = PATH;
     FileStorage fileStorage(path);
 
@@ -41,7 +41,7 @@ TEST(FileStorageTest, LoadMessagesFromMemoryWhenStorageIsEmpty) {
     ASSERT_EQ(0, messages.size());
 }
 
-TEST(FileStorageTest, LoadMessagesFromMemoryWhenStorageIsNotEmpty) {
+TEST(FileStorageTest, LoadMessagesToMemoryWhenStorageIsNotEmpty) {
     std::string path = PATH;
     FileStorage fileStorage(path);
     Acknowledge ack(2);
@@ -63,8 +63,47 @@ TEST(FileStorageTest, AddMessageWhichAlreadyExistInStorage) {
     Acknowledge ack(2);
     fileStorage.add(ack);
 
-
     ASSERT_THROW(fileStorage.add(ack), FileExists);
+
+    boost::filesystem::remove_all(path);
+}
+
+
+TEST(FileStorageTest, AfterRemovingMessageShouldBeRemovedFromMemory) {
+    std::string path = PATH;
+
+    FileStorage fileStorage(path);
+    Acknowledge ack(2), ack2(22);
+    fileStorage.add(ack);
+    fileStorage.add(ack2);
+
+    fileStorage.remove(ack.id_);
+    std::vector<Message *> messages = fileStorage.getAll();
+
+    Acknowledge *read = dynamic_cast<Acknowledge *>(messages.back());
+    ASSERT_EQ(1, messages.size());
+
+    ASSERT_EQ(ack2.getConsumedPacketId(), read->getConsumedPacketId());
+    boost::filesystem::remove_all(path);
+}
+
+TEST(FileStorageTest, AfterRemovingMessageShouldBeRemovedFromStorage) {
+    std::string path = PATH;
+
+    FileStorage fileStorage(path);
+    Acknowledge ack(2), ack2(22);
+    fileStorage.add(ack);
+    fileStorage.add(ack2);
+
+    fileStorage.remove(ack.id_);
+
+    FileStorage fileStorage2(path);
+    std::vector<Message *> receivedMessages = fileStorage2.getAll();
+
+    ASSERT_EQ(1, receivedMessages.size());
+
+    Acknowledge *received = dynamic_cast<Acknowledge *>(receivedMessages.back());
+    ASSERT_EQ(ack2.getConsumedPacketId(), received->getConsumedPacketId());
 
     boost::filesystem::remove_all(path);
 }
