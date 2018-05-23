@@ -43,7 +43,12 @@ namespace Sockets {
     }
 
     void SocketSupervisor::remove(TCPSocketBase* socket) {
-        sockets_.erase(socket->getDescriptor());
+        for(auto it = sockets_.begin(); it != sockets_.end(); ++it) {
+            if(it->second == socket) {
+                sockets_.erase(it);
+                break;
+            }
+        }
         update();
     }
 
@@ -83,17 +88,21 @@ namespace Sockets {
                 if(fd_set.isSetWrite(socket.first)) {
                     if(socket.second->getState() == SocketState::CONNECTING) {
                         socket.second->connect();
-                        //socket.second->connect(IP({"::1"}), 56011);
-                        //socket.second->setConnected();
                     }
                 }
             });
-            std::for_each(sockets_.begin(), sockets_.end(), [&](auto socket) {
-                if(fd_set.isSetRead(socket.first)) {
-                    socket.second->readFromSocket();
-                    socket.second->readyRead();
+            for(auto it = sockets_.begin(); it != sockets_.end();) {
+                if(fd_set.isSetRead(it->first)) {
+                    if(!(it->second->readFromSocket())) {
+                        it = sockets_.erase(it);
+                        continue;
+                    }
+                    else {
+                        it->second->readyRead();
+                    }
                 }
-            });
+                ++it;
+            }
             std::for_each(servers_.begin(), servers_.end(), [&](auto server) {
                 if(fd_set.isSetRead(server.first)) {
                     server.second->incomingConnection();
