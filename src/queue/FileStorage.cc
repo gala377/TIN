@@ -36,10 +36,8 @@ void FileStorage::add(const Message& mess) {
     std::fstream file;
     file.open(file_path, std::fstream::out);
 
-    boost::archive::text_oarchive o_archive(file);
-    o_archive << mess;
+    mess.toFile(file_path);
 
-    file.close();
     _files.insert(file_path);
 }
 
@@ -133,13 +131,8 @@ Message* FileStorage::Iterator::operator*() const {
 
 Message* FileStorage::Iterator::readFile() const {
     std::fstream file;
-    file.open(*_curr, std::fstream::in);
 
-    std::string data;
-    file >> data;
-
-    file.close();
-    return Message::fromString(data);
+    return Message::fromFile(*_curr);
 }
 
 FileStorage::Iterator& FileStorage::Iterator::operator++() {

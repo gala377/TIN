@@ -23,7 +23,7 @@ namespace Queue {
     class FileStorage: public Storage {
     public:
         /*
-        *   Creates directory tree from @param path 
+        *   Creates directory tree from @param path
         *   upon creation. Saves it in @member _root.
         *  
         *   If directory already exists populates itself
@@ -58,7 +58,7 @@ namespace Queue {
         void remove(int id) override;
 
         /*
-        *   Resturns collection of all messages stored
+        *   Returns collection of all messages stored
         *   under @member _root;
         */
         std::vector<Message*> getAll() override;

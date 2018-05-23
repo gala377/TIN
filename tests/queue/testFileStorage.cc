@@ -1,5 +1,5 @@
 //
-// Created by ma on 22.05.18.
+// Created by Martyna on 22.05.18.
 //
 
 #include <gtest/gtest.h>
@@ -9,20 +9,23 @@
 #include "../../inc/queue/FileStorage.h"
 #include "../../inc/messages/Acknowledge.h"
 #include "../../inc/messages/Message.h"
-#define PATH "/home/ma/CLionProjects/myTKOM/TinTesty/testStorageFiles"
+
+#define PATH "./tempTest/"
 using namespace Queue;
 
 
 TEST(FileStorageTest, RestoreMessage) {
     std::string path = PATH;
-    boost::filesystem::remove_all(path); //TODO move to the last line
+
     FileStorage fileStorage(path);
-    Acknowledge ack (2);
+    Acknowledge ack(2);
     fileStorage.add(ack);
 
-    std::vector<Message*> messages = fileStorage.getAll();
+    std::vector<Message *> messages = fileStorage.getAll();
 
-    ASSERT_EQ(ack.getConsumedPacketId(), dynamic_cast<Acknowledge*>(messages.back())->getConsumedPacketId());
+    ASSERT_EQ(ack.getConsumedPacketId(), dynamic_cast<Acknowledge *>(messages.back())->getConsumedPacketId());
+
+    boost::filesystem::remove_all(path);
 
 }
 
@@ -52,6 +55,7 @@ TEST(FileStorageTest, LoadMessagesFromMemoryWhenStorageIsNotEmpty) {
 
     boost::filesystem::remove_all(path);
 }
+
 TEST(FileStorageTest, AddMessageWhichAlreadyExistInStorage) {
     std::string path = PATH;
 
@@ -60,7 +64,7 @@ TEST(FileStorageTest, AddMessageWhichAlreadyExistInStorage) {
     fileStorage.add(ack);
 
 
-    ASSERT_THROW(fileStorage.add(ack),FileExists);
+    ASSERT_THROW(fileStorage.add(ack), FileExists);
 
     boost::filesystem::remove_all(path);
 }

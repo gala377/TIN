@@ -6,8 +6,6 @@
 
 #include <boost/archive/binary_oarchive.hpp>
 #include <boost/archive/binary_iarchive.hpp>
-#include <boost/archive/text_iarchive.hpp>
-#include <boost/archive/text_oarchive.hpp>
 #include <boost/iostreams/device/back_inserter.hpp>
 #include <boost/iostreams/stream.hpp>
 #include <boost/serialization/export.hpp>
@@ -18,8 +16,12 @@ public:
     virtual ~Message();
 
     std::string toString() const;
-    static Message* fromString(const std::string& buffer);
-    static Message* fromBuffer(boost::asio::streambuf& buffer);
+    void toFile(const std::string &pathName) const;
+
+    static Message *fromString(const std::string &buffer);
+    static Message *fromFile(const std::string &pathName);
+    static Message *fromBuffer(boost::asio::streambuf &buffer);
+
     uint32_t id_;
 protected:
     Message();

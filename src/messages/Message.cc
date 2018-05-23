@@ -2,10 +2,11 @@
 // Created by gajus123 on 14.05.18.
 //
 
+#include <fstream>
 #include "messages/Message.h"
 
 Message::Message() :
-    id_(global_id++) {
+        id_(global_id++) {
 }
 
 Message::~Message() {
@@ -22,8 +23,16 @@ std::string Message::toString() const {
     return result;
 }
 
-Message* Message::fromString(const std::string& buffer) {
-    Message* result;
+void Message::toFile(const std::string &path) const {
+    std::ofstream ofs(path);
+    boost::archive::binary_oarchive outputArchive(ofs);
+
+    outputArchive << &(*this);
+    ofs.close();
+}
+
+Message *Message::fromString(const std::string &buffer) {
+    Message *result;
     boost::iostreams::basic_array_source<char> device(buffer.data(), buffer.size());
     boost::iostreams::stream<boost::iostreams::basic_array_source<char> > a(device);
     boost::archive::binary_iarchive inputArchive(a);
@@ -32,8 +41,18 @@ Message* Message::fromString(const std::string& buffer) {
     return result;
 }
 
-Message* Message::fromBuffer(boost::asio::streambuf& buffer) {
-    Message* result;
+Message *Message::fromFile(const std::string &path) {
+    Message *result;
+    std::ifstream ifs(path);
+    boost::archive::binary_iarchive ia(ifs);
+
+    ia >> result;
+    ifs.close();
+    return result;
+}
+
+Message *Message::fromBuffer(boost::asio::streambuf &buffer) {
+    Message *result;
     boost::archive::binary_iarchive inputArchive(buffer);
 
     inputArchive >> result;
