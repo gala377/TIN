@@ -33,9 +33,6 @@ void FileStorage::add(const Message& mess) {
         throw FileExists(file_path);
     }
 
-    std::fstream file;
-    file.open(file_path, std::fstream::out);
-
     mess.toFile(file_path);
 
     _files.insert(file_path);
@@ -130,8 +127,6 @@ Message* FileStorage::Iterator::operator*() const {
 }
 
 Message* FileStorage::Iterator::readFile() const {
-    std::fstream file;
-
     return Message::fromFile(*_curr);
 }
 
