@@ -40,6 +40,7 @@ namespace Sockets {
         bool connect();
 
         uint16_t port() const;
+        in6_addr address() const;
 
         int write(char* buffer, unsigned int size);
         int write(std::string buffer);

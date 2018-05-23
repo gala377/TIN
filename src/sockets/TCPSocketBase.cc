@@ -126,8 +126,12 @@ namespace Sockets {
         return connect(ip(address), port);
     }
 
-    uint16_t TCPSocketBase::port() const {
-        return socket_interface_->port(socket_);
+    uint16_t TCPSocketBase::port() const {  
+        return port_;
+    }
+
+    in6_addr TCPSocketBase::address() const {
+        return address_;
     }
 
     int TCPSocketBase::write(std::string buffer) {
