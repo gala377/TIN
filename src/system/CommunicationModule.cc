@@ -4,10 +4,12 @@ CommunicationModule::CommunicationModule(uint16_t port) :
         socket_facade_(),
         server_(&socket_facade_),
         supervisor_(&socket_facade_),
-        state_(State::UNCONNECTED) {
+        state_(State::UNCONNECTED),
+        queue_(mess_dir_name_) {
     server_.listen(port);
     supervisor_.add(&server_);
     server_.incomingConnection.connect([=](){
+        // todo what messege id should we use?
         if(state_ == State::UNCONNECTED) {
             std::cout << "Connected now\n";
             socket_ = server_.accept();
@@ -24,13 +26,20 @@ CommunicationModule::CommunicationModule(uint16_t port) :
             socket_ = server_.accept();
             prepareSocket();
             state_ = State::CONNECTED;
-            //TODO retransmit
+            retransmissMessages();
         }
     });
 }
 
+void CommunicationModule::retransmissMessages() {
+    for(auto it: queue_) {
+        socket_->writeMessage(*mess);
+    }
+}
+
 void CommunicationModule::prepareSocket() {
     socket_->packetReady.connect([=](){
+        // todo read it if ack then delete from storage 
         std::cout << "Incomming message\n";
         incommingMessage();
     });
@@ -63,11 +72,25 @@ CommunicationModule CommunicationModule::createClient(uint16_t port, Sockets::IP
 CommunicationModule::CommunicationModule(CommunicationModule&& other) :
     server_(std::move(other.server_)),
     socket_(std::move(other.socket_)),
-    supervisor_(std::move(other.supervisor_)) {
+    supervisor_(std::move(other.supervisor_)),
+    queue_(mess_dir_name_) {
 }
 
 CommunicationModule& CommunicationModule::operator=(CommunicationModule&& other) {
     server_ = std::move(other.server_);
     socket_ = std::move(other.socket_);
     supervisor_ = std::move(other.supervisor_);
+}
+
+std::shared_ptr<Message> CommunicationModule::read() {
+    if(!socket_->availableMessages()) {
+        // todo custom exception
+        throw std::runtime_error("No messages to read!");
+    }
+    return socket_->readMessage();
+}
+
+void CommunicationModule::send(Message* mess) {
+    queue_.add(*mess);
+    socket_->writeMessage(*mess);
 }

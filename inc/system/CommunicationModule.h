@@ -11,6 +11,7 @@
 #include "sockets/TCPSocket.h"
 #include "sockets/SocketSupervisor.h"
 #include "sockets/SocketUnix.h"
+#include "queue/FileStorage.h"
 
 class CommunicationModule {
 public:
@@ -23,11 +24,15 @@ public:
     static CommunicationModule createServer(uint16_t port);
     static CommunicationModule createClient(uint16_t port, Sockets::IP address, uint16_t server_port);
 
+    std::shared_ptr<Message> read();
+    void send(Message* mess);
+
     boost::signals2::signal<void()> incommingMessage;
 private:
     CommunicationModule(uint16_t port);
 
     void prepareSocket();
+    void retransmissMessages();
 
     Sockets::SocketUnix socket_facade_;
     Sockets::TCPServer server_;
@@ -37,6 +42,10 @@ private:
     enum class State {
         UNCONNECTED, CONNECTED, DISCONNECTED
     } state_;
+
+    Queue::FileStorage queue_;
+    // todo if needed make it random generated 
+    const std::string mess_dir_name_ = "gryphon_stor";
 };
 
 #endif //TIN_COMMUNICATIONMODULE_H

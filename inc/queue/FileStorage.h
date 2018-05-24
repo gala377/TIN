@@ -61,7 +61,7 @@ namespace Queue {
         *   Returns collection of all messages stored
         *   under @member _root;
         */
-        std::vector<Message*> getAll() override;
+        std::vector<std::shared_ptr<Message>> getAll() override;
 
         /*
         *   Forward iterator for range loop support.
@@ -75,7 +75,7 @@ namespace Queue {
             bool operator==(const Iterator& iterator) const;
             bool operator!=(const Iterator& iterator) const;
 
-            Message* operator*() const;
+            std::shared_ptr<Message> operator*() const;
 
             Iterator& operator++();
 
@@ -86,8 +86,7 @@ namespace Queue {
             Iterator(std::set<std::string>::const_iterator curr_file,
                      const FileStorage& parent);
 
-            Message* readFile() const;
-
+            std::shared_ptr<Message> readFile() const;
         };
 
         friend class Iterator;

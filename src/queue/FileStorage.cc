@@ -64,10 +64,10 @@ void FileStorage::remove(int id) {
     _files.erase(file_path);
 }
 
-std::vector<Message*> FileStorage::getAll() {
-    std::vector<Message*> mess;
+std::vector<std::shared_ptr<Message>> FileStorage::getAll() {
+    std::vector<std::shared_ptr<Message>> mess;
     for(auto it = begin(); it != end(); ++it) {
-        mess.push_back(*it);
+        mess.push_back(it);
     }
     return mess;
 }
@@ -122,11 +122,11 @@ bool FileStorage::Iterator::operator!=(const FileStorage::Iterator& iterator) co
     return !(*this == iterator);
 }
 
-Message* FileStorage::Iterator::operator*() const {
+std::shared_ptr<Message> FileStorage::Iterator::operator*() const {
     return readFile();
 }
 
-Message* FileStorage::Iterator::readFile() const {
+std::shared_ptr<Message> FileStorage::Iterator::readFile() const {
     return Message::fromFile(*_curr);
 }
 
