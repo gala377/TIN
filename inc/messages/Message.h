@@ -17,7 +17,10 @@ public:
     virtual ~Message();
 
     std::string toString();
+    void toFile(const std::string &pathName) const;
+
     static std::shared_ptr<Message> fromString(const std::string& buffer);
+    static std::shared_ptr<Message> fromFile(const std::string &pathName);
     static std::shared_ptr<Message> fromBuffer(boost::asio::streambuf& buffer);
     uint32_t id_;
 protected:

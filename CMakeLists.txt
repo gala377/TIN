@@ -12,10 +12,10 @@ endif()
 
 find_package(GTest REQUIRED)
 include_directories(${GTEST_INCLUDE_DIRS})
-include_directories(inc/)
+include_directories(./inc)
 
-set(SOURCE_FILES src/system/CommunicationModule.cc src/sockets/FDSet.cc src/sockets/TCPSocketBase.cc src/sockets/TCPServer.cc src/sockets/SocketHelpers.cc src/sockets/SocketSupervisor.cc src/sockets/SocketUnix.cc src/sockets/TCPSocket.cc src/messages/Message.cc src/messages/Acknowledge.cc)
-set(SOURCE_FILES_TESTS tests/tests_main.cc tests/messages/test_Acknowledge.cc)
+set(SOURCE_FILES src/system/CommunicationModule.cc src/sockets/FDSet.cc src/sockets/TCPSocketBase.cc src/sockets/TCPServer.cc src/sockets/SocketHelpers.cc src/sockets/SocketSupervisor.cc src/sockets/SocketUnix.cc src/sockets/TCPSocket.cc src/messages/Message.cc src/messages/Acknowledge.cc src/queue/FileStorage.cc src/queue/Exceptions.cc)
+set(SOURCE_FILES_TESTS tests/tests_main.cc tests/messages/test_Acknowledge.cc tests/queue/testFileStorage.cc)
 
 if(FALSE)
     add_executable(TIN_TESTS ${SOURCE_FILES} ${SOURCE_FILES_TESTS})
