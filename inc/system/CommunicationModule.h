@@ -45,7 +45,7 @@ private:
 
     Queue::FileStorage queue_;
     // todo if needed make it random generated 
-    const std::string mess_dir_name_ = "gryphon_stor";
+    const std::string mess_dir_name_ = "gryphon";
 };
 
 #endif //TIN_COMMUNICATIONMODULE_H

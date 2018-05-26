@@ -19,6 +19,7 @@
 
 class MyMess: public Message {
 public:
+    MyMess(): _data("") {}
     MyMess(std::string data): _data(std::move(data)) {}
     std::string _data;
 
@@ -32,12 +33,14 @@ private:
     }
 };
 
+BOOST_CLASS_EXPORT(MyMess)
+
 
 int main() {
     std::cout << "Creating server\n";
-    auto server = CommunicationModule::createServer(6543);
+    auto server = CommunicationModule::createServer(5608);
     std::cout << "Creating client\n";
-    auto client = CommunicationModule::createClient(6543, Sockets::IP({"::1"}), 6542);
+    auto client = CommunicationModule::createClient(5608, Sockets::IP({"::1"}), 5609);
     std::cout << "Connecting to signal\n";
     client.incommingMessage.connect([&client](){
         std::cout << "Got message!\n";
@@ -55,8 +58,8 @@ int main() {
     Message* mess = new MyMess("Hello World!");
     server.send(mess);
     delete mess;
-    std::cout << "Mess send\nReceaving it";
+    std::cout << "Mess send\nReceaving it...\n";
 
-
+    std::cin >> c;
 
 }

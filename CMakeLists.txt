@@ -21,7 +21,7 @@ add_executable(TIN_TESTS ${SOURCE_FILES} ${SOURCE_FILES_TESTS})
 
 
 target_link_libraries(TIN_TESTS ${GTEST_LIBRARIES})
-add_executable(TIN ${SOURCE_FILES} ${SOURCE_FILES} src/main.cc)
+add_executable(TIN ${SOURCE_FILES} src/main.cc)
 
 if(Boost_FOUND)
     target_link_libraries(TIN_TESTS ${Boost_LIBRARIES})

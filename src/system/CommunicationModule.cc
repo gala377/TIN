@@ -5,7 +5,7 @@ CommunicationModule::CommunicationModule(uint16_t port) :
         server_(&socket_facade_),
         supervisor_(&socket_facade_),
         state_(State::UNCONNECTED),
-        queue_(mess_dir_name_) {
+        queue_("gryphon_temp") {
     server_.listen(port);
     supervisor_.add(&server_);
     server_.incomingConnection.connect([=](){
@@ -38,6 +38,7 @@ void CommunicationModule::retransmissMessages() {
 }
 
 void CommunicationModule::prepareSocket() {
+    std::cout << "Preparing sockets\n";
     socket_->packetReady.connect([=](){
         // todo read it if ack then delete from storage 
         std::cout << "Incomming message\n";
