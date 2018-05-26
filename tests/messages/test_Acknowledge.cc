@@ -26,7 +26,7 @@ TEST(AcknowledgeTests, SerializationToFile) {
 
     boost::filesystem::remove("./temp");
     mess->toFile("./test1");
-    Message* mess2 = Message::fromFile("./test1");
+    auto mess2 = Message::fromFile("./test1");
     boost::filesystem::remove("./test1");
 
     Acknowledge* ack2 = dynamic_cast<Acknowledge*>(mess2.get());

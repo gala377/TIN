@@ -16,7 +16,7 @@ class Message {
 public:
     virtual ~Message();
 
-    std::string toString();
+    std::string toString() const;
     void toFile(const std::string &pathName) const;
 
     static std::shared_ptr<Message> fromString(const std::string& buffer);

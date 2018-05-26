@@ -67,7 +67,7 @@ void FileStorage::remove(int id) {
 std::vector<std::shared_ptr<Message>> FileStorage::getAll() {
     std::vector<std::shared_ptr<Message>> mess;
     for(auto it = begin(); it != end(); ++it) {
-        mess.push_back(it);
+        mess.push_back(*it);
     }
     return mess;
 }

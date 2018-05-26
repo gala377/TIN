@@ -21,9 +21,9 @@ TEST(FileStorageTest, RestoreMessage) {
     Acknowledge ack(2);
     fileStorage.add(ack);
 
-    std::vector<Message *> messages = fileStorage.getAll();
+    std::vector<std::shared_ptr<Message>> messages = fileStorage.getAll();
 
-    ASSERT_EQ(ack.getConsumedPacketId(), dynamic_cast<Acknowledge *>(messages.back())->getConsumedPacketId());
+    ASSERT_EQ(ack.getConsumedPacketId(), std::dynamic_pointer_cast<Acknowledge>(messages.back())->getConsumedPacketId());
 
     boost::filesystem::remove_all(path);
 
@@ -34,7 +34,7 @@ TEST(FileStorageTest, LoadMessagesToMemoryWhenStorageIsEmpty) {
     FileStorage fileStorage(path);
 
     FileStorage fileStorage2(path);
-    std::vector<Message *> messages = fileStorage2.getAll();
+    std::vector<std::shared_ptr<Message>> messages = fileStorage2.getAll();
 
     boost::filesystem::remove_all(path);
 
@@ -48,9 +48,9 @@ TEST(FileStorageTest, LoadMessagesToMemoryWhenStorageIsNotEmpty) {
     fileStorage.add(ack);
 
     FileStorage fileStorage2(path);
-    std::vector<Message *> messages = fileStorage2.getAll();
+    std::vector<std::shared_ptr<Message>> messages = fileStorage2.getAll();
 
-    Acknowledge *received = dynamic_cast<Acknowledge *>(messages.back());
+    auto received = std::dynamic_pointer_cast<Acknowledge>(messages.back());
     ASSERT_EQ(ack.getConsumedPacketId(), received->getConsumedPacketId());
 
     boost::filesystem::remove_all(path);
@@ -78,9 +78,9 @@ TEST(FileStorageTest, AfterRemovingMessageShouldBeRemovedFromMemory) {
     fileStorage.add(ack2);
 
     fileStorage.remove(ack.id_);
-    std::vector<Message *> messages = fileStorage.getAll();
+    std::vector<std::shared_ptr<Message>> messages = fileStorage.getAll();
 
-    Acknowledge *read = dynamic_cast<Acknowledge *>(messages.back());
+    auto read = std::dynamic_pointer_cast<Acknowledge>(messages.back());
     ASSERT_EQ(1, messages.size());
 
     ASSERT_EQ(ack2.getConsumedPacketId(), read->getConsumedPacketId());
@@ -98,11 +98,11 @@ TEST(FileStorageTest, AfterRemovingMessageShouldBeRemovedFromStorage) {
     fileStorage.remove(ack.id_);
 
     FileStorage fileStorage2(path);
-    std::vector<Message *> receivedMessages = fileStorage2.getAll();
+    std::vector<std::shared_ptr<Message>> receivedMessages = fileStorage2.getAll();
 
     ASSERT_EQ(1, receivedMessages.size());
 
-    Acknowledge *received = dynamic_cast<Acknowledge *>(receivedMessages.back());
+    auto received = std::dynamic_pointer_cast<Acknowledge>(receivedMessages.back());
     ASSERT_EQ(ack2.getConsumedPacketId(), received->getConsumedPacketId());
 
     boost::filesystem::remove_all(path);

@@ -33,7 +33,7 @@ CommunicationModule::CommunicationModule(uint16_t port) :
 
 void CommunicationModule::retransmissMessages() {
     for(auto it: queue_) {
-        socket_->writeMessage(*mess);
+        socket_->writeMessage(*it);
     }
 }
 
