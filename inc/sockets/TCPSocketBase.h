@@ -18,6 +18,7 @@
 
 #include "SocketHelpers.h"
 #include "SocketFacade.h"
+#include "FDSet.h"
 
 namespace Sockets {
     class TCPSocketBase {
@@ -38,6 +39,8 @@ namespace Sockets {
         bool connect(IP address, uint16_t port);
         bool connect(DNS address, uint16_t port);
         bool connect();
+
+        bool waitForConnected(int timeout);
 
         uint16_t port() const;
         in6_addr address() const;
