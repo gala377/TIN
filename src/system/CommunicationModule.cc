@@ -67,6 +67,12 @@ CommunicationModule CommunicationModule::createClient(uint16_t port, Sockets::IP
     CommunicationModule result(server_port);
     result.socket_ = std::make_shared<Sockets::TCPSocket>(&result.socket_facade_);
     result.socket_->connect(address, port);
+    if(result.socket_->waitForConnected(30)) {
+        result.prepareSocket();
+    }
+    else {
+        throw std::runtime_error("Cannot connect creating Client");
+    }
     return result;
 }
 
