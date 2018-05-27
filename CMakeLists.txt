@@ -22,8 +22,12 @@ add_executable(TIN_TESTS ${SOURCE_FILES} ${SOURCE_FILES_TESTS})
 
 target_link_libraries(TIN_TESTS ${GTEST_LIBRARIES})
 add_executable(TIN ${SOURCE_FILES} src/main.cc)
+add_executable(TIN_SERVER ${SOURCE_FILES} src/server.cc)
+add_executable(TIN_CLIENT ${SOURCE_FILES} src/client.cc)
 
 if(Boost_FOUND)
     target_link_libraries(TIN_TESTS ${Boost_LIBRARIES})
     target_link_libraries(TIN ${Boost_LIBRARIES})
+    target_link_libraries(TIN_SERVER ${Boost_LIBRARIES})
+    target_link_libraries(TIN_CLIENT ${Boost_LIBRARIES})
 endif()

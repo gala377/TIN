@@ -1,4 +1,8 @@
 //
+// Created by igor on 28.05.18.
+//
+
+//
 // Created by gajus123 on 23.04.18.
 //
 
@@ -38,21 +42,12 @@ BOOST_CLASS_EXPORT(MyMess)
 
 
 int main() {
-    std::cout << "Creating server\n";
-    auto server = CommunicationModule::createServer(5610);
-    sleep(1);
+    std::cout << "Creating server\nChoose port for server\n";
+    int port;
+    std::cin >> port;
+    auto server = CommunicationModule::createServer(port);
 
-    std::cout << "Creating client\n";
-    auto client = CommunicationModule::createClient(5610, Sockets::IP({"::1"}), 5611);
-    std::cout << "Connecting to signal\n";
-    client.incommingMessage.connect([&client](){
-        std::cout << "Got message!\n";
-        auto pack = client.read();
-        auto casted = std::dynamic_pointer_cast<MyMess>(pack);
-        std::cout << "Content " << casted->_data;
-    });
-
-    std::cout << "Connection is done!\n";
+    std::cout << "Connection is done!\nType to send a mesage!\n";
 
     char c;
     std::cin >> c;
@@ -61,7 +56,7 @@ int main() {
     Message* mess = new MyMess("Hello World!");
     server.send(mess);
     delete mess;
-    std::cout << "Mess send\nReceaving it...\n";
+    std::cout << "Mess send\nWaiting...\n";
 
     std::cin >> c;
 
