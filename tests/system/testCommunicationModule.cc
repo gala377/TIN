@@ -29,6 +29,13 @@ TEST(CommunicationTest, ClientAndServerEstablishConnectionsWithoutExceptionsWith
     );
 }
 
+TEST(CommunicationTest, whenReadingEmptyQueueExceptionIsThrown) {
+
+    CommunicationModule server = CommunicationModule::createServer(5616, PATH0);
+    CommunicationModule client = CommunicationModule::createClient(5616, Sockets::IP({"::1"}), 5617);
+    ASSERT_THROW(server.read(),std::exception);
+}
+
 TEST(CommunicationTest, ReceiveMessageWithDefaultDictionaries) {
 
     boost::filesystem::remove_all(PATH);
