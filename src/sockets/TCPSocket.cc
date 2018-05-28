@@ -55,6 +55,10 @@ namespace Sockets {
         return result;
     }
 
+    std::shared_ptr<Message> TCPSocket::peekMessage() {
+        return messages_.front();
+    }
+
     int TCPSocket::availableMessages() {
         return messages_.size();
     }

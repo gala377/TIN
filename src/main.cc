@@ -59,8 +59,11 @@ int main() {
 
     std::cout << "Sending message!\n";
     Message* mess = new MyMess("Hello World!");
+    Message* mess2 = new MyMess("Hello Again!");
     server.send(mess);
+    server.send(mess2);
     delete mess;
+    delete mess2;
     std::cout << "Mess send\nReceaving it...\n";
 
     std::cin >> c;
