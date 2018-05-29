@@ -97,7 +97,7 @@ CommunicationModule CommunicationModule::createClient(uint16_t server_port,
         result.prepareSocket();
         result.retransmitMessages();
     } else {
-        throw std::runtime_error("Cannot connect creating Client");
+        throw System::CanNotConnect();
     }
     return result;
 }
@@ -121,7 +121,7 @@ CommunicationModule &CommunicationModule::operator=(CommunicationModule &&other)
 std::shared_ptr<Message> CommunicationModule::read() {
     if (!socket_->availableMessages()) {
         // todo custom exception
-        throw std::runtime_error("No messages to read!");
+        throw System::NoMessageToRead();
     }
     std::shared_ptr<Message> receivedMess = socket_->readMessage();
     return receivedMess;
@@ -131,7 +131,7 @@ void CommunicationModule::send(Message *mess) {
     queue_.add(*mess);
     std::cout << "Last send mess is: " << queue_.lastAddedId() << "\n";
     if(socket_->writeMessage(*mess) <0){
-        throw std::runtime_error("unable to send message, connection is closed");
+        throw System::UnableToSentMessageClosedConnection();
     };
 }
 

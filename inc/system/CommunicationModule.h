@@ -12,6 +12,7 @@
 #include "sockets/SocketSupervisor.h"
 #include "sockets/SocketUnix.h"
 #include "queue/FileStorage.h"
+#include "Exceptions.h"
 
 static const std::string default_mess_dir_name_ = "./gryphon" ;
 class CommunicationModule {
