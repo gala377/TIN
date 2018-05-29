@@ -13,38 +13,41 @@
 #define PATH0 "./Test0"
 #define PATH1 "./Test1"
 
-//TODO define port numbers
+#define PORT0 5714
+#define PORT1 5715
+#define PORT2 5716
+#define PORT3 5717
 
 using namespace Queue;
 
 TEST(CommunicationTest, ClientAndServerEstablishConnectionsWithoutExceptionsWithDefaultDictionaries) {
     ASSERT_NO_THROW(
-            CommunicationModule server = CommunicationModule::createServer(5614);
-            CommunicationModule client = CommunicationModule::createClient(5614, Sockets::IP({"::1"}), 5615);
+            CommunicationModule server = CommunicationModule::createServer(PORT0);
+            CommunicationModule client = CommunicationModule::createClient(PORT0, Sockets::IP({"::1"}), PORT1);
     );
 }
 
 TEST(CommunicationTest, ClientAndServerEstablishConnectionsWithoutExceptionsWithCustomDictionaries) {
     ASSERT_NO_THROW(
-            CommunicationModule server = CommunicationModule::createServer(5614, PATH0);
-            CommunicationModule client = CommunicationModule::createClient(5614, Sockets::IP({"::1"}), 5615, PATH1);
+            CommunicationModule server = CommunicationModule::createServer(PORT0, PATH0);
+            CommunicationModule client = CommunicationModule::createClient(PORT0, Sockets::IP({"::1"}), PORT1, PATH1);
     );
 }
 
 TEST(CommunicationTest, EstablishConnectionClientFirst) {
     ASSERT_THROW({
-                     CommunicationModule client = CommunicationModule::createClient(5614, Sockets::IP({"::1"}), 5615);
+                     CommunicationModule client = CommunicationModule::createClient(PORT0, Sockets::IP({"::1"}), PORT1);
                      sleep(1);
-                     CommunicationModule server = CommunicationModule::createServer(5614);
-                 }, std::exception
+                     CommunicationModule server = CommunicationModule::createServer(PORT0);
+                 }, System::CanNotConnect
     );
 }
 
 TEST(CommunicationTest, EstablishConnectionServerFirst) {
     ASSERT_NO_THROW(
-            CommunicationModule server = CommunicationModule::createServer(5614, PATH0);
+            CommunicationModule server = CommunicationModule::createServer(PORT0, PATH0);
             sleep(1);
-            CommunicationModule client = CommunicationModule::createClient(5614, Sockets::IP({"::1"}), 5615, PATH1);
+            CommunicationModule client = CommunicationModule::createClient(PORT0, Sockets::IP({"::1"}), PORT1, PATH1);
     );
 }
 
@@ -52,20 +55,20 @@ TEST(CommunicationTest, WhenServerReadingEmptyQueueExceptionIsThrown) {
 
     boost::filesystem::remove_all(PATH0);
     boost::filesystem::remove_all(PATH1);
-    CommunicationModule server = CommunicationModule::createServer(5618, PATH0);
-    CommunicationModule client = CommunicationModule::createClient(5618, Sockets::IP({"::1"}), 5619, PATH1);
+    CommunicationModule server = CommunicationModule::createServer(PORT0, PATH0);
+    CommunicationModule client = CommunicationModule::createClient(PORT0, Sockets::IP({"::1"}), PORT1, PATH1);
     sleep(1);
-    ASSERT_THROW(server.read(), std::exception);
+    ASSERT_THROW(server.read(), System::NoMessageToRead);
 }
 
 TEST(CommunicationTest, WhenClientReadingEmptyQueueExceptionIsThrown) {
 
     boost::filesystem::remove_all(PATH0);
     boost::filesystem::remove_all(PATH1);
-    CommunicationModule server = CommunicationModule::createServer(5616, PATH0);
-    CommunicationModule client = CommunicationModule::createClient(5616, Sockets::IP({"::1"}), 5617, PATH1);
+    CommunicationModule server = CommunicationModule::createServer(PORT0, PATH0);
+    CommunicationModule client = CommunicationModule::createClient(PORT0, Sockets::IP({"::1"}), PORT1, PATH1);
     sleep(1);
-    ASSERT_THROW(client.read(), std::exception);
+    ASSERT_THROW(client.read(), System::NoMessageToRead);
 }
 
 TEST(CommunicationTest, OnlyOneClientCanConnect) {
@@ -75,10 +78,11 @@ TEST(CommunicationTest, OnlyOneClientCanConnect) {
     sleep(1);
     CommunicationModule client2 = CommunicationModule::createClient(5618, Sockets::IP({"::1"}), 5614, PATH1);
     Message *mess = new TestMess("A");
-    client.send(mess);
+    server.send(mess);
+    sleep(1);
 
     ASSERT_NO_THROW(client.read());
-    ASSERT_THROW(client2.read(), std::exception);
+    ASSERT_THROW(client2.read(), System::NoMessageToRead);
 
     delete mess;
     boost::filesystem::remove_all(PATH0);
@@ -90,13 +94,13 @@ TEST(CommunicationTest, AfterDisconnactionShouldNotBeAbleToSendMessage) {
 
     boost::filesystem::remove_all(PATH0);
     TestMess *mess = new TestMess("first mss");
-    CommunicationModule server = CommunicationModule::createServer(5616, PATH0);
+    CommunicationModule server = CommunicationModule::createServer(PORT0, PATH0);
     {
-        CommunicationModule client = CommunicationModule::createClient(5616, Sockets::IP({"::1"}), 5617);
+        CommunicationModule client = CommunicationModule::createClient(PORT0, Sockets::IP({"::1"}), PORT1);
     }
     sleep(1);
 
-    ASSERT_THROW(server.send(mess), std::exception);
+    ASSERT_THROW(server.send(mess), System::UnableToSentMessageClosedConnection);
 
     delete mess;
     boost::filesystem::remove_all(PATH0);
@@ -108,9 +112,9 @@ TEST(CommunicationTest, AfterDisconnactionShouldBeAbleToReadReceivedMessage) {
     boost::filesystem::remove_all(PATH1);
 
     TestMess *mess = new TestMess("first mss");
-    CommunicationModule server = CommunicationModule::createServer(5616, PATH0);
+    CommunicationModule server = CommunicationModule::createServer(PORT0, PATH0);
     {
-        CommunicationModule client = CommunicationModule::createClient(5616, Sockets::IP({"::1"}), 5617 , PATH1);
+        CommunicationModule client = CommunicationModule::createClient(PORT0, Sockets::IP({"::1"}), PORT1 , PATH1);
         client.send(mess);
     }
     sleep(1);
@@ -130,8 +134,8 @@ TEST(CommunicationTest, AfterDisconnactionShouldBeAbleToReadReceivedMessage) {
 TEST(CommunicationTest, ReceiveMessageWithDefaultDictionaries) {
 
     boost::filesystem::remove_all(PATH);
-    CommunicationModule server = CommunicationModule::createServer(5616);
-    CommunicationModule client = CommunicationModule::createClient(5616, Sockets::IP({"::1"}), 5617);
+    CommunicationModule server = CommunicationModule::createServer(PORT0);
+    CommunicationModule client = CommunicationModule::createClient(PORT0, Sockets::IP({"::1"}), PORT1);
     TestMess *sendMess = new TestMess("first mss");
     client.send(sendMess);
     sleep(1);
@@ -149,8 +153,8 @@ TEST(CommunicationTest, ReceiveMessageWithCustomDictionaries) {
     boost::filesystem::remove_all(PATH0);
     boost::filesystem::remove_all(PATH1);
 
-    CommunicationModule server = CommunicationModule::createServer(5618, PATH0);
-    CommunicationModule client = CommunicationModule::createClient(5618, Sockets::IP({"::1"}), 5619, PATH1);
+    CommunicationModule server = CommunicationModule::createServer(PORT0, PATH0);
+    CommunicationModule client = CommunicationModule::createClient(PORT0, Sockets::IP({"::1"}), PORT1, PATH1);
     TestMess *sendMess = new TestMess("first mss");
     client.send(sendMess);
     sleep(1);
@@ -167,9 +171,9 @@ TEST(CommunicationTest, ReceiveMessageWithCustomDictionaries) {
 
 TEST(CommunicationTest, AfterReceivedAckRemoveItFromStorage) {
     boost::filesystem::remove_all(PATH1);
-    CommunicationModule server = CommunicationModule::createServer(5616, PATH0);
+    CommunicationModule server = CommunicationModule::createServer(PORT0, PATH0);
     sleep(1);
-    CommunicationModule client = CommunicationModule::createClient(5616, Sockets::IP({"::1"}), 5617, PATH1);
+    CommunicationModule client = CommunicationModule::createClient(PORT0, Sockets::IP({"::1"}), PORT1, PATH1);
     TestMess *messToSend = new TestMess("first mss");
     client.send(messToSend);
     sleep(1);
@@ -187,8 +191,8 @@ TEST(CommunicationTest, AfterReceivedAckRemoveItFromStorage) {
 TEST(CommunicationTest, ReceivedMessagesAreNotSavedInStorage) {
     boost::filesystem::remove_all(PATH0);
     boost::filesystem::remove_all(PATH1);
-    CommunicationModule server = CommunicationModule::createServer(5616, PATH0);
-    CommunicationModule client = CommunicationModule::createClient(5616, Sockets::IP({"::1"}), 5617, PATH1);
+    CommunicationModule server = CommunicationModule::createServer(PORT0, PATH0);
+    CommunicationModule client = CommunicationModule::createClient(PORT0, Sockets::IP({"::1"}), PORT1, PATH1);
     TestMess *messToSend = new TestMess("first mss");
     client.send(messToSend);
     sleep(1);
@@ -207,14 +211,14 @@ TEST(CommunicationTest, AfterRestartContainsUnconfirmedMessage) {
     boost::filesystem::remove_all(PATH1);
     TestMess *messToSend = new TestMess("first mss");
 
-    CommunicationModule server = CommunicationModule::createServer(5616);
+    CommunicationModule server = CommunicationModule::createServer(PORT0);
     {
-        CommunicationModule client = CommunicationModule::createClient(5616, Sockets::IP({"::1"}), 5617, PATH1);
+        CommunicationModule client = CommunicationModule::createClient(PORT0, Sockets::IP({"::1"}), PORT1, PATH1);
         sleep(1);
         client.send(messToSend);
         sleep(1);
     }
-    CommunicationModule client1 = CommunicationModule::createClient(5616, Sockets::IP({"::1"}), 5617, PATH1);
+    CommunicationModule client1 = CommunicationModule::createClient(PORT0, Sockets::IP({"::1"}), PORT1, PATH1);
     ASSERT_EQ(1, client1.getMessageInStorageCount());
 
     delete messToSend;
@@ -226,16 +230,16 @@ TEST(CommunicationTest, AfterReconnectToSomeServerResendUnconfirmedMessage) {
     TestMess *messToSend = new TestMess("first mss");
     boost::filesystem::remove_all(PATH1);
     {
-        CommunicationModule server = CommunicationModule::createServer(5616);
-        CommunicationModule client0 = CommunicationModule::createClient(5616, Sockets::IP({"::1"}), 5617, PATH1);
+        CommunicationModule server = CommunicationModule::createServer(PORT0);
+        CommunicationModule client0 = CommunicationModule::createClient(PORT0, Sockets::IP({"::1"}), PORT1, PATH1);
         sleep(1);
         client0.send(messToSend);
         sleep(1);
         std::shared_ptr<Message> receivedMess = server.read(); //msg received, but ack is not sent
     }
 
-    CommunicationModule server = CommunicationModule::createServer(5618);
-    CommunicationModule client1 = CommunicationModule::createClient(5618, Sockets::IP({"::1"}), 5617, PATH1);
+    CommunicationModule server = CommunicationModule::createServer(PORT2);
+    CommunicationModule client1 = CommunicationModule::createClient(PORT2, Sockets::IP({"::1"}), PORT1, PATH1);
     sleep(1);//wait for resend
     std::shared_ptr<Message> receivedMess1 = server.read();
     auto *receivedTest = dynamic_cast<TestMess *>(receivedMess1.get());
@@ -254,18 +258,18 @@ TEST(CommunicationTest, AfterReconnectToSomeServerResendUnconfirmedMessage) {
 TEST(CommunicationTest, AfterReconnectToTheSameServerResendUnconfirmedMessage) {
 
     boost::filesystem::remove_all(PATH1);
-    CommunicationModule server = CommunicationModule::createServer(5618);
+    CommunicationModule server = CommunicationModule::createServer(PORT0);
     TestMess *messToSend = new TestMess("first mss");
     {
         sleep(1);
-        CommunicationModule client0 = CommunicationModule::createClient(5618, Sockets::IP({"::1"}), 5617, PATH1);
+        CommunicationModule client0 = CommunicationModule::createClient(PORT0, Sockets::IP({"::1"}), PORT1, PATH1);
         sleep(1);
         client0.send(messToSend);
         sleep(1);
         std::shared_ptr<Message> receivedMess = server.read(); //msg received, but ack is not sent
     }
     //client 0 have not received ack, client1 should load unconfirmed message and resend it
-    CommunicationModule client1 = CommunicationModule::createClient(5618, Sockets::IP({"::1"}), 5620, PATH1);
+    CommunicationModule client1 = CommunicationModule::createClient(PORT0, Sockets::IP({"::1"}), PORT3, PATH1);
     sleep(1);//wait for resend
     std::shared_ptr<Message> receivedMess1 = server.read();
     auto *receivedTest = dynamic_cast<TestMess *>(receivedMess1.get());
@@ -285,15 +289,15 @@ TEST(CommunicationTest, AfterOtherReconnectResendYourUnconfirmedMessages) {
 
     boost::filesystem::remove_all(PATH);
     boost::filesystem::remove_all(PATH1);
-    CommunicationModule server = CommunicationModule::createServer(5617);
+    CommunicationModule server = CommunicationModule::createServer(PORT0);
     TestMess *messToSend = new TestMess("first mss");
     {
-        CommunicationModule client0 = CommunicationModule::createClient(5617, Sockets::IP({"::1"}), 5619, PATH1);
+        CommunicationModule client0 = CommunicationModule::createClient(PORT0, Sockets::IP({"::1"}), PORT1, PATH1);
         sleep(1);
         server.send(messToSend);
     }
 
-    CommunicationModule client = CommunicationModule::createClient(5617, Sockets::IP({"::1"}), 5619, PATH1);
+    CommunicationModule client = CommunicationModule::createClient(PORT0, Sockets::IP({"::1"}), PORT1, PATH1);
     sleep(1);//wait for resend
 
     std::shared_ptr<Message> receivedMess1 = client.read();
@@ -319,14 +323,14 @@ TEST(CommunicationTest, AfterBothReconnectResendUnconfirmedMessages) {
 
     TestMess *messToSend = new TestMess("first mss");
     {
-        CommunicationModule server = CommunicationModule::createServer(5617);
-        CommunicationModule client0 = CommunicationModule::createClient(5617, Sockets::IP({"::1"}), 5619, PATH1);
+        CommunicationModule server = CommunicationModule::createServer(PORT0);
+        CommunicationModule client0 = CommunicationModule::createClient(PORT0, Sockets::IP({"::1"}), PORT1, PATH1);
         sleep(1);
         server.send(messToSend);
     }
 
-    CommunicationModule server = CommunicationModule::createServer(5617);
-    CommunicationModule client = CommunicationModule::createClient(5617, Sockets::IP({"::1"}), 5619, PATH1);
+    CommunicationModule server = CommunicationModule::createServer(PORT0);
+    CommunicationModule client = CommunicationModule::createClient(PORT0, Sockets::IP({"::1"}), PORT1, PATH1);
     sleep(1);//wait for resend
 
     std::shared_ptr<Message> receivedMess1 = client.read();
@@ -345,11 +349,11 @@ TEST(CommunicationTest, AfterBothReconnectResendUnconfirmedMessages) {
 
 TEST(CommunicationTest, WhenSenderHasNotReceivedAckDoNotReadTheSameMessageAgain) {
 
-    CommunicationModule server = CommunicationModule::createServer(5616);
+    CommunicationModule server = CommunicationModule::createServer(PORT0);
     TestMess *messToSend = new TestMess("first mss");
     {
         sleep(1);
-        CommunicationModule client0 = CommunicationModule::createClient(5616, Sockets::IP({"::1"}), 5617, PATH1);
+        CommunicationModule client0 = CommunicationModule::createClient(PORT0, Sockets::IP({"::1"}), PORT1, PATH1);
         sleep(1);
         client0.send(messToSend);
         sleep(1);
@@ -358,10 +362,10 @@ TEST(CommunicationTest, WhenSenderHasNotReceivedAckDoNotReadTheSameMessageAgain)
     std::shared_ptr<Message> receivedMess = server.read();
     server.acknowledge(receivedMess.get());
 
-    CommunicationModule client1 = CommunicationModule::createClient(5616, Sockets::IP({"::1"}), 5618, PATH1);
-    sleep(1); //client1 will resend message
+    CommunicationModule client1 = CommunicationModule::createClient(PORT0, Sockets::IP({"::1"}), PORT3, PATH1);
+    sleep(1);
 
-    ASSERT_THROW(server.read(), std::exception); //queue is empty
+    ASSERT_THROW(server.read(), System::NoMessageToRead); //queue is empty
 
     delete messToSend;
     boost::filesystem::remove_all(PATH);
@@ -373,9 +377,9 @@ TEST(CommunicationTest, WhenReceivedAckRemoveTheProperMessage) {
     boost::filesystem::remove_all(PATH0);
     TestMess *mess0 = new TestMess("first");
     TestMess *mess1 = new TestMess("sec");
-    CommunicationModule server = CommunicationModule::createServer(5616, PATH0);
+    CommunicationModule server = CommunicationModule::createServer(PORT0, PATH0);
     {
-        CommunicationModule client = CommunicationModule::createClient(5616, Sockets::IP({"::1"}), 5617, PATH1);
+        CommunicationModule client = CommunicationModule::createClient(PORT0, Sockets::IP({"::1"}), PORT1, PATH1);
         sleep(1);
         server.send(mess0);
         sleep(1);
@@ -386,7 +390,7 @@ TEST(CommunicationTest, WhenReceivedAckRemoveTheProperMessage) {
         client.acknowledge(receivedMess0.get());
     }
 
-    CommunicationModule client = CommunicationModule::createClient(5616, Sockets::IP({"::1"}), 5618, PATH1);
+    CommunicationModule client = CommunicationModule::createClient(PORT0, Sockets::IP({"::1"}), PORT3, PATH1);
     sleep(1); //server will resend message
 
     std::shared_ptr<Message> receivedMess = client.read();
@@ -405,9 +409,9 @@ TEST(CommunicationTest, WhenReceivedAckRemoveTheProperMessage1) {
     boost::filesystem::remove_all(PATH1);
     TestMess *mess1 = new TestMess("sec");
     TestMess *mess0 = new TestMess("first");
-    CommunicationModule server = CommunicationModule::createServer(5616, PATH0);
+    CommunicationModule server = CommunicationModule::createServer(PORT0, PATH0);
     {
-        CommunicationModule client = CommunicationModule::createClient(5616, Sockets::IP({"::1"}), 5617, PATH1);
+        CommunicationModule client = CommunicationModule::createClient(PORT0, Sockets::IP({"::1"}), PORT1, PATH1);
         sleep(1);
         server.send(mess0);
         server.send(mess1);
@@ -418,7 +422,7 @@ TEST(CommunicationTest, WhenReceivedAckRemoveTheProperMessage1) {
         client.acknowledge(receivedMess1.get());
     }
 
-    CommunicationModule client = CommunicationModule::createClient(5616, Sockets::IP({"::1"}), 5618, PATH1);
+    CommunicationModule client = CommunicationModule::createClient(PORT0, Sockets::IP({"::1"}), PORT3, PATH1);
     sleep(1); //server will resend message
 
     std::shared_ptr<Message> receivedMess = client.read();
@@ -438,8 +442,8 @@ TEST(CommunicationTest, WhenReceivedAckManyTimesRemoveOnlyOneMessage) {
 
     TestMess *mess1 = new TestMess("first");
     TestMess *mess2 = new TestMess("sec");
-    CommunicationModule server = CommunicationModule::createServer(5616, PATH0);
-    CommunicationModule client = CommunicationModule::createClient(5616, Sockets::IP({"::1"}), 5617, PATH1);
+    CommunicationModule server = CommunicationModule::createServer(PORT0, PATH0);
+    CommunicationModule client = CommunicationModule::createClient(PORT0, Sockets::IP({"::1"}), PORT1, PATH1);
     sleep(1);
     server.send(mess1);
     sleep(1);
@@ -469,17 +473,47 @@ TEST(CommunicationTest, WhenReceivedAckToUnknowMessageThrowException) {
 
     TestMess *mess1 = new TestMess("sec");
     TestMess *mess2 = new TestMess("sec");
-    CommunicationModule server = CommunicationModule::createServer(5617, PATH0);
-    CommunicationModule client = CommunicationModule::createClient(5617, Sockets::IP({"::1"}), 5616, PATH1);
+    CommunicationModule server = CommunicationModule::createServer(PORT0, PATH0);
+    CommunicationModule client = CommunicationModule::createClient(PORT0, Sockets::IP({"::1"}), PORT1, PATH1);
     server.send(mess1);
 
-    ASSERT_THROW(
+    ASSERT_NO_THROW(
                      client.acknowledge(mess2);//mess2 does not exist in server's storage
                      sleep(1);
-                 , Queue::FileDoesNotExist);
+                     );
 
     delete mess1;
     delete mess2;
     boost::filesystem::remove_all(PATH0);
     boost::filesystem::remove_all(PATH1);
+}
+
+
+TEST(CommunicationTest, MessagesInStorageShouldNotBeOverwritten) {
+
+    boost::filesystem::remove_all(PATH0);
+    boost::filesystem::remove_all(PATH1);
+    CommunicationModule server = CommunicationModule::createServer(PORT0, PATH0);
+    sleep(1);
+    TestMess *messToSend = new TestMess("first mss");
+    int recipientsCount = 5;
+    int messagesCount = 5;
+    for (int j = 0; j < recipientsCount; ++j) {
+        CommunicationModule client0 = CommunicationModule::createClient(PORT0, Sockets::IP({"::1"}), PORT1, PATH1);
+        sleep(1);
+        for (int i = 0; i < messagesCount; ++i) {
+            TestMess *messToSend = new TestMess("first mss");
+            server.send(messToSend);
+            sleep(0.1);
+            delete messToSend;
+        }
+        boost::filesystem::remove_all(PATH1);
+        sleep(1);
+    }
+
+    ASSERT_EQ(recipientsCount*messagesCount, server.getMessageInStorageCount());
+
+    delete messToSend;
+    boost::filesystem::remove_all(PATH1);
+    boost::filesystem::remove_all(PATH);
 }
