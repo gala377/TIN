@@ -29,11 +29,19 @@ TEST(CommunicationTest, ClientAndServerEstablishConnectionsWithoutExceptionsWith
     );
 }
 
-TEST(CommunicationTest, whenReadingEmptyQueueExceptionIsThrown) {
+TEST(CommunicationTest, WhenServerReadingEmptyQueueExceptionIsThrown) {
+    CommunicationModule server = CommunicationModule::createServer(5618, PATH0);
+    CommunicationModule client = CommunicationModule::createClient(5618, Sockets::IP({"::1"}), 5619);
+    sleep(1);
+    ASSERT_THROW(server.read(), std::exception);
+}
+
+TEST(CommunicationTest, WhenClientReadingEmptyQueueExceptionIsThrown) {
 
     CommunicationModule server = CommunicationModule::createServer(5616, PATH0);
     CommunicationModule client = CommunicationModule::createClient(5616, Sockets::IP({"::1"}), 5617);
-    ASSERT_THROW(server.read(),std::exception);
+    sleep(1);
+    ASSERT_THROW(client.read(), std::exception);
 }
 
 TEST(CommunicationTest, ReceiveMessageWithDefaultDictionaries) {
@@ -47,7 +55,7 @@ TEST(CommunicationTest, ReceiveMessageWithDefaultDictionaries) {
     std::shared_ptr<Message> receivedMess = server.read();
 
     ASSERT_EQ(sendMess->id_, receivedMess.get()->id_);
-    ASSERT_EQ(sendMess->_data, static_cast<TestMess *>(receivedMess.get())->_data);
+    ASSERT_EQ(sendMess->_data, dynamic_cast<TestMess *>(receivedMess.get())->_data);
 
     delete sendMess;
     boost::filesystem::remove_all(PATH);
@@ -55,35 +63,163 @@ TEST(CommunicationTest, ReceiveMessageWithDefaultDictionaries) {
 
 TEST(CommunicationTest, ReceiveMessageWithCustomDictionaries) {
 
-    CommunicationModule server = CommunicationModule::createServer(5616, PATH0);
-    CommunicationModule client = CommunicationModule::createClient(5616, Sockets::IP({"::1"}), 5617, PATH1);
+    CommunicationModule server = CommunicationModule::createServer(5618, PATH0);
+    CommunicationModule client = CommunicationModule::createClient(5618, Sockets::IP({"::1"}), 5619, PATH1);
     TestMess *sendMess = new TestMess("first mss");
     client.send(sendMess);
     sleep(1);
     std::shared_ptr<Message> receivedMess = server.read();
 
     ASSERT_EQ(sendMess->id_, receivedMess.get()->id_);
-    ASSERT_EQ(sendMess->_data, static_cast<TestMess *>(receivedMess.get())->_data);
+    ASSERT_EQ(sendMess->_data, dynamic_cast<TestMess *>(receivedMess.get())->_data);
 
     delete sendMess;
+
     boost::filesystem::remove_all(PATH0);
     boost::filesystem::remove_all(PATH1);
 }
 
-TEST(CommunicationTest, AfterServerReceivedMessageClientRemovesItFromStorage) {
-
+TEST(CommunicationTest, AfterReceivedAckRemoveItFromStorage) {
+    boost::filesystem::remove_all(PATH1);
     CommunicationModule server = CommunicationModule::createServer(5616, PATH0);
     sleep(1);
     CommunicationModule client = CommunicationModule::createClient(5616, Sockets::IP({"::1"}), 5617, PATH1);
-    TestMess *sendMess = new TestMess("first mss");
-    client.send(sendMess);
+    TestMess *messToSend = new TestMess("first mss");
+    client.send(messToSend);
     sleep(1);
     std::shared_ptr<Message> receivedMess = server.read();
-    sleep(3);
+    server.acknowledge(receivedMess.get());
+    sleep(1);
 
     ASSERT_EQ(0, client.getMessageInStorageCount());
 
-    delete sendMess;
+    delete messToSend;
     boost::filesystem::remove_all(PATH0);
     boost::filesystem::remove_all(PATH1);
+}
+
+TEST(CommunicationTest, ReceivedMessagesAreNotSavedInStorage) {
+    boost::filesystem::remove_all(PATH0);
+    boost::filesystem::remove_all(PATH1);
+    CommunicationModule server = CommunicationModule::createServer(5616, PATH0);
+    CommunicationModule client = CommunicationModule::createClient(5616, Sockets::IP({"::1"}), 5617, PATH1);
+    TestMess *messToSend = new TestMess("first mss");
+    client.send(messToSend);
+    sleep(1);
+    std::shared_ptr<Message> receivedMess = server.read();
+    server.acknowledge(receivedMess.get());
+    sleep(1);
+    ASSERT_EQ(0, server.getMessageInStorageCount());
+
+    delete messToSend;
+    boost::filesystem::remove_all(PATH0);
+    boost::filesystem::remove_all(PATH1);
+}
+
+TEST(CommunicationTest, AfterRestartContainsUnconfirmedMessage) {
+
+    boost::filesystem::remove_all(PATH1);
+    TestMess *messToSend = new TestMess("first mss");
+
+    CommunicationModule server = CommunicationModule::createServer(5616);
+    {
+        CommunicationModule client = CommunicationModule::createClient(5616, Sockets::IP({"::1"}), 5617, PATH1);
+        sleep(1);
+        client.send(messToSend);
+        sleep(1);
+    }
+    CommunicationModule client1 = CommunicationModule::createClient(5616, Sockets::IP({"::1"}), 5617, PATH1);
+    ASSERT_EQ(1, client1.getMessageInStorageCount());
+
+    delete messToSend;
+    boost::filesystem::remove_all(PATH1);
+}
+
+TEST(CommunicationTest, AfterReconnectToSomeServerResendUnconfirmedMessage) {
+
+    TestMess *messToSend = new TestMess("first mss");
+    boost::filesystem::remove_all(PATH1);
+    {
+        CommunicationModule server = CommunicationModule::createServer(5616);
+        CommunicationModule client0 = CommunicationModule::createClient(5616, Sockets::IP({"::1"}), 5617, PATH1);
+        sleep(1);
+        client0.send(messToSend);
+        sleep(1);
+        std::shared_ptr<Message> receivedMess = server.read(); //msg received, but ack is not sent
+    }
+
+    CommunicationModule server = CommunicationModule::createServer(5618);
+    CommunicationModule client1 = CommunicationModule::createClient(5618, Sockets::IP({"::1"}), 5617, PATH1);
+    sleep(1);//wait for resend
+    std::shared_ptr<Message> receivedMess1 = server.read();
+    auto *receivedTest = dynamic_cast<TestMess *>(receivedMess1.get());
+    server.acknowledge(receivedMess1.get());
+    sleep(1);
+
+    ASSERT_EQ(messToSend->id_, receivedTest->id_);
+    ASSERT_EQ(messToSend->_data, receivedTest->_data);
+    ASSERT_EQ(0, client1.getMessageInStorageCount());
+
+    delete messToSend;
+    boost::filesystem::remove_all(PATH);
+    boost::filesystem::remove_all(PATH1);
+}
+
+TEST(CommunicationTest, AfterReconnectToTheSameServerResendUnconfirmedMessage) {
+
+    boost::filesystem::remove_all(PATH1);
+    CommunicationModule server = CommunicationModule::createServer(5616);
+    TestMess *messToSend = new TestMess("first mss");
+    {
+        sleep(1);
+        CommunicationModule client0 = CommunicationModule::createClient(5616, Sockets::IP({"::1"}), 5617, PATH1);
+        sleep(1);
+        client0.send(messToSend);
+        sleep(1);
+        std::shared_ptr<Message> receivedMess = server.read(); //msg received, but ack is not sent
+    }
+    //client 0 have not received ack, client1 should load unconfirmed message and resend it
+    CommunicationModule client1 = CommunicationModule::createClient(5616, Sockets::IP({"::1"}), 5617, PATH1);
+    sleep(1);//wait for resend
+    std::shared_ptr<Message> receivedMess1 = server.read();
+    auto *receivedTest = dynamic_cast<TestMess *>(receivedMess1.get());
+    server.acknowledge(receivedMess1.get());
+    sleep(1);
+
+    ASSERT_EQ(messToSend->id_, receivedTest->id_);
+    ASSERT_EQ(messToSend->_data, receivedTest->_data);
+    ASSERT_EQ(0, client1.getMessageInStorageCount());
+
+    delete messToSend;
+    boost::filesystem::remove_all(PATH);
+    boost::filesystem::remove_all(PATH1);
+}
+
+TEST(CommunicationTest, AfterOtherReconnectResendYourUnconfirmedMessages) {
+
+    boost::filesystem::remove_all(PATH);
+    boost::filesystem::remove_all(PATH1);
+    CommunicationModule server = CommunicationModule::createServer(5617);
+    TestMess *messToSend = new TestMess("first mss");
+    {
+        sleep(1);
+        CommunicationModule client0 = CommunicationModule::createClient(5617, Sockets::IP({"::1"}), 5619, PATH1);
+        sleep(1);
+        server.send(messToSend);
+    }
+
+    CommunicationModule client = CommunicationModule::createClient(5617, Sockets::IP({"::1"}), 5620, PATH1);
+    sleep(1);//wait for resend
+
+    std::shared_ptr<Message> receivedMess1 = client.read();
+    client.acknowledge(receivedMess1.get());
+    auto *receivedTest = dynamic_cast<TestMess *>(receivedMess1.get());
+
+    ASSERT_EQ(messToSend->id_, receivedTest->id_);
+    ASSERT_EQ(messToSend->_data, receivedTest->_data);
+    ASSERT_EQ(0, client.getMessageInStorageCount());
+
+    delete messToSend;
+    boost::filesystem::remove_all(PATH1);
+    boost::filesystem::remove_all(PATH);
 }
