@@ -13,6 +13,8 @@
 #define PATH0 "./gryphonTest0/"
 #define PATH1 "./gryphonTest1/"
 
+//TODO define port numbers
+
 using namespace Queue;
 
 TEST(CommunicationTest, ClientAndServerEstablishConnectionsWithoutExceptionsWithDefaultDictionaries) {
@@ -25,6 +27,23 @@ TEST(CommunicationTest, ClientAndServerEstablishConnectionsWithoutExceptionsWith
 TEST(CommunicationTest, ClientAndServerEstablishConnectionsWithoutExceptionsWithCustomDictionaries) {
     ASSERT_NO_THROW(
             CommunicationModule server = CommunicationModule::createServer(5614, PATH0);
+            CommunicationModule client = CommunicationModule::createClient(5614, Sockets::IP({"::1"}), 5615, PATH1);
+    );
+}
+
+TEST(CommunicationTest, EstablishConnectionClientFirst) {
+    ASSERT_THROW({
+                     CommunicationModule client = CommunicationModule::createClient(5614, Sockets::IP({"::1"}), 5615);
+                     sleep(1);
+                     CommunicationModule server = CommunicationModule::createServer(5614);
+                 }, std::exception
+    );
+}
+
+TEST(CommunicationTest, EstablishConnectionServerFirst) {
+    ASSERT_NO_THROW(
+            CommunicationModule server = CommunicationModule::createServer(5614, PATH0);
+            sleep(1);
             CommunicationModule client = CommunicationModule::createClient(5614, Sockets::IP({"::1"}), 5615, PATH1);
     );
 }
@@ -43,6 +62,47 @@ TEST(CommunicationTest, WhenClientReadingEmptyQueueExceptionIsThrown) {
     sleep(1);
     ASSERT_THROW(client.read(), std::exception);
 }
+
+TEST(CommunicationTest, OnlyOneClientCanConnect) {
+
+    CommunicationModule server = CommunicationModule::createServer(5618, PATH0);
+    CommunicationModule client = CommunicationModule::createClient(5618, Sockets::IP({"::1"}), 5619);
+    sleep(1);
+    ASSERT_THROW(CommunicationModule client = CommunicationModule::createClient(5618, Sockets::IP({"::1"}), 5614);, std::exception);
+}
+
+
+TEST(CommunicationTest, AfterDisconactionShouldNotBeAbleToSendMessage) {
+
+    TestMess *mess = new TestMess("first mss");
+    CommunicationModule server = CommunicationModule::createServer(5616, PATH0);
+    {
+        CommunicationModule client = CommunicationModule::createClient(5616, Sockets::IP({"::1"}), 5617);
+    }
+    sleep(1);
+
+    ASSERT_THROW(server.send(mess), std::exception);
+
+    delete mess;
+}
+
+TEST(CommunicationTest, AfterDisconactionShouldBeAbleToReadReceivedMessage) {
+
+    TestMess *mess = new TestMess("first mss");
+    CommunicationModule server = CommunicationModule::createServer(5616, PATH0);
+    {
+        CommunicationModule client = CommunicationModule::createClient(5616, Sockets::IP({"::1"}), 5617);
+        client.send(mess);
+    }
+    sleep(1);
+
+    std::shared_ptr<Message> receivedMess = server.read();
+    ASSERT_EQ(mess->id_, receivedMess.get()->id_);
+    ASSERT_EQ(mess->id_, dynamic_cast<TestMess *>(receivedMess.get())->id_);
+
+    delete mess;
+}
+
 
 TEST(CommunicationTest, ReceiveMessageWithDefaultDictionaries) {
 
@@ -179,7 +239,7 @@ TEST(CommunicationTest, AfterReconnectToTheSameServerResendUnconfirmedMessage) {
         std::shared_ptr<Message> receivedMess = server.read(); //msg received, but ack is not sent
     }
     //client 0 have not received ack, client1 should load unconfirmed message and resend it
-    CommunicationModule client1 = CommunicationModule::createClient(5616, Sockets::IP({"::1"}), 5617, PATH1);
+    CommunicationModule client1 = CommunicationModule::createClient(5616, Sockets::IP({"::1"}), 5618, PATH1);
     sleep(1);//wait for resend
     std::shared_ptr<Message> receivedMess1 = server.read();
     auto *receivedTest = dynamic_cast<TestMess *>(receivedMess1.get());
@@ -202,13 +262,12 @@ TEST(CommunicationTest, AfterOtherReconnectResendYourUnconfirmedMessages) {
     CommunicationModule server = CommunicationModule::createServer(5617);
     TestMess *messToSend = new TestMess("first mss");
     {
-        sleep(1);
         CommunicationModule client0 = CommunicationModule::createClient(5617, Sockets::IP({"::1"}), 5619, PATH1);
         sleep(1);
         server.send(messToSend);
     }
 
-    CommunicationModule client = CommunicationModule::createClient(5617, Sockets::IP({"::1"}), 5620, PATH1);
+    CommunicationModule client = CommunicationModule::createClient(5617, Sockets::IP({"::1"}), 5619, PATH1);
     sleep(1);//wait for resend
 
     std::shared_ptr<Message> receivedMess1 = client.read();
@@ -222,4 +281,29 @@ TEST(CommunicationTest, AfterOtherReconnectResendYourUnconfirmedMessages) {
     delete messToSend;
     boost::filesystem::remove_all(PATH1);
     boost::filesystem::remove_all(PATH);
+}
+
+TEST(CommunicationTest, WhenSenderHasNotReceivedAckDoNotReadTheSameMessageAgain) {
+
+    CommunicationModule server = CommunicationModule::createServer(5616);
+    TestMess *messToSend = new TestMess("first mss");
+    {
+        sleep(1);
+        CommunicationModule client0 = CommunicationModule::createClient(5616, Sockets::IP({"::1"}), 5617, PATH1);
+        sleep(1);
+        client0.send(messToSend);
+        sleep(1);
+    }
+
+    std::shared_ptr<Message> receivedMess = server.read();
+    server.acknowledge(receivedMess.get());
+
+    CommunicationModule client1 = CommunicationModule::createClient(5616, Sockets::IP({"::1"}), 5618, PATH1);
+    sleep(1); //client1 will resend message
+
+    ASSERT_THROW(server.read(), std::exception); //queue is empty
+
+    delete messToSend;
+    boost::filesystem::remove_all(PATH);
+    boost::filesystem::remove_all(PATH1);
 }
