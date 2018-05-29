@@ -41,6 +41,7 @@ std::uint32_t CommunicationModule::getMessageInStorageCount() const {
 
 
 void CommunicationModule::retransmitMessages() {
+    std::cout << "Retransmission protocol kicked in.\n";
     for (auto it: queue_) {
         socket_->writeMessage(*it);
     }
