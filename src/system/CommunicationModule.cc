@@ -136,6 +136,7 @@ void CommunicationModule::send(Message *mess) {
 
 void CommunicationModule::acknowledge(Message* mess) {
     if(already_ack_.find(mess->id_) != already_ack_.end()) {
+        // todo should it really? maybe just ignore it?
         throw std::runtime_error("Trying to ack the same mess twice");
     }
     Acknowledge ack(mess->id_);
