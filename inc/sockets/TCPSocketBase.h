@@ -65,8 +65,8 @@ namespace Sockets {
         bool readFromSocket();
     protected:
         boost::asio::streambuf buffer_;
-    private:
         SocketFacade* socket_interface_;
+    private:
 
         int socket_;
         SocketState state_;
