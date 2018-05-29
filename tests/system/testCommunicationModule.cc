@@ -346,10 +346,10 @@ TEST(CommunicationTest, WhenSenderHasNotReceivedAckDoNotReadTheSameMessageAgain)
 TEST(CommunicationTest, WhenReceivedAckRemoveTheProperMessage) {
 
     boost::filesystem::remove_all(PATH0);
+    TestMess *mess0 = new TestMess("first");
     TestMess *mess1 = new TestMess("sec");
+    CommunicationModule server = CommunicationModule::createServer(5616, PATH0);
     {
-        CommunicationModule server = CommunicationModule::createServer(5616, PATH0);
-        TestMess *mess0 = new TestMess("first");
         CommunicationModule client = CommunicationModule::createClient(5616, Sockets::IP({"::1"}), 5617, PATH1);
         sleep(1);
         server.send(mess0);
@@ -359,10 +359,8 @@ TEST(CommunicationTest, WhenReceivedAckRemoveTheProperMessage) {
         std::shared_ptr<Message> receivedMess0 = client.read();
         std::shared_ptr<Message> receivedMess1 = client.read();
         client.acknowledge(receivedMess0.get());
-        delete mess0;
     }
 
-    CommunicationModule server = CommunicationModule::createServer(5616, PATH0);
     CommunicationModule client = CommunicationModule::createClient(5616, Sockets::IP({"::1"}), 5618, PATH1);
     sleep(1); //server will resend message
 
@@ -370,6 +368,7 @@ TEST(CommunicationTest, WhenReceivedAckRemoveTheProperMessage) {
 
     ASSERT_EQ(mess1->_data, dynamic_cast<TestMess *>(receivedMess.get())->_data);
 
+    delete mess0;
     delete mess1;
     boost::filesystem::remove_all(PATH0);
     boost::filesystem::remove_all(PATH1);
@@ -377,30 +376,29 @@ TEST(CommunicationTest, WhenReceivedAckRemoveTheProperMessage) {
 
 TEST(CommunicationTest, WhenReceivedAckRemoveTheProperMessage1) {
 
-
+    boost::filesystem::remove_all(PATH0);
+    boost::filesystem::remove_all(PATH1);
     TestMess *mess1 = new TestMess("sec");
+    TestMess *mess0 = new TestMess("first");
+    CommunicationModule server = CommunicationModule::createServer(5616, PATH0);
     {
-        CommunicationModule server = CommunicationModule::createServer(5616, PATH0);
-        TestMess *mess0 = new TestMess("first");
         CommunicationModule client = CommunicationModule::createClient(5616, Sockets::IP({"::1"}), 5617, PATH1);
         sleep(1);
+        server.send(mess0);
         server.send(mess1);
         sleep(1);
-        server.send(mess0);
-        sleep(1);
         std::shared_ptr<Message> receivedMess0 = client.read();
+        sleep(1);
         std::shared_ptr<Message> receivedMess1 = client.read();
         client.acknowledge(receivedMess1.get());
-        delete mess0;
     }
 
-    CommunicationModule server = CommunicationModule::createServer(5616, PATH0);
     CommunicationModule client = CommunicationModule::createClient(5616, Sockets::IP({"::1"}), 5618, PATH1);
     sleep(1); //server will resend message
 
     std::shared_ptr<Message> receivedMess = client.read();
 
-    ASSERT_EQ(mess1->_data, dynamic_cast<TestMess *>(receivedMess.get())->_data);
+    ASSERT_EQ(mess0->_data, dynamic_cast<TestMess *>(receivedMess.get())->_data);
 
     delete mess0;
     delete mess1;
@@ -417,6 +415,7 @@ TEST(CommunicationTest, WhenReceivedAckManyTimesRemoveOnlyOneMessage) {
     TestMess *mess2 = new TestMess("sec");
     CommunicationModule server = CommunicationModule::createServer(5616, PATH0);
     CommunicationModule client = CommunicationModule::createClient(5616, Sockets::IP({"::1"}), 5617, PATH1);
+    sleep(1);
     server.send(mess1);
     sleep(1);
     server.send(mess2);
