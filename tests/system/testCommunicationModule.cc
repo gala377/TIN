@@ -272,11 +272,13 @@ TEST(CommunicationTest, AfterOtherReconnectResendYourUnconfirmedMessages) {
     sleep(1);//wait for resend
 
     std::shared_ptr<Message> receivedMess1 = client.read();
-    client.acknowledge(receivedMess1.get());
     auto *receivedTest = dynamic_cast<TestMess *>(receivedMess1.get());
 
     ASSERT_EQ(messToSend->id_, receivedTest->id_);
     ASSERT_EQ(messToSend->_data, receivedTest->_data);
+
+    client.acknowledge(receivedMess1.get());
+    sleep(1);
     ASSERT_EQ(0, server.getMessageInStorageCount());
 
     delete messToSend;
@@ -303,8 +305,9 @@ TEST(CommunicationTest, AfterBothReconnectResendUnconfirmedMessages) {
     sleep(1);//wait for resend
 
     std::shared_ptr<Message> receivedMess1 = client.read();
-    client.acknowledge(receivedMess1.get());
     auto *receivedTest = dynamic_cast<TestMess *>(receivedMess1.get());
+    client.acknowledge(receivedMess1.get());
+    sleep(1);
 
     ASSERT_EQ(messToSend->id_, receivedTest->id_);
     ASSERT_EQ(messToSend->_data, receivedTest->_data);
@@ -342,6 +345,7 @@ TEST(CommunicationTest, WhenSenderHasNotReceivedAckDoNotReadTheSameMessageAgain)
 
 TEST(CommunicationTest, WhenReceivedAckRemoveTheProperMessage) {
 
+    boost::filesystem::remove_all(PATH1);
     TestMess *mess1 = new TestMess("sec");
     {
         CommunicationModule server = CommunicationModule::createServer(5616, PATH0);
