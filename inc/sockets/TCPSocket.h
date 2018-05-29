@@ -5,7 +5,7 @@
 #ifndef TIN_TCPSOCKETWITHPACKET_H
 #define TIN_TCPSOCKETWITHPACKET_H
 
-#include <queue>
+#include <deque>
 #include <cinttypes>
 
 #include "TCPSocketBase.h"
@@ -28,14 +28,14 @@ namespace Sockets {
         void writeMessage(Message& message);
 
         std::shared_ptr<Message> readMessage();
-        std::shared_ptr<Message> peekMessage();
+        std::shared_ptr<Message> peekBack();
+        void popBack();
 
         int availableMessages();
 
         boost::signals2::signal<void()> packetReady;
     private:
-        std::queue<std::shared_ptr<Message>> messages_;
-
+        std::deque<std::shared_ptr<Message>> messages_;
         void createMessageHandler();
     };
 }

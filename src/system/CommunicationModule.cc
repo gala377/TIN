@@ -10,7 +10,7 @@ CommunicationModule::CommunicationModule(uint16_t port, std::string mess_dir_nam
     server_.listen(port);
     supervisor_.add(&server_);
     server_.incomingConnection.connect([=]() {
-        // todo what messege id should we use?
+        // todo which messege id should we use?
         if (state_ == State::UNCONNECTED) {
             std::cout << "Connected now\n";
             socket_ = server_.accept();
@@ -50,19 +50,15 @@ void CommunicationModule::prepareSocket() {
     std::cout << "Preparing sockets\n";
     socket_->packetReady.connect([=]() {
         std::cout << "Incomming message\n";
-
-        // todo it's wrong !!!
-        // todo change it to back not the front
-        // todo change socket queue to deque
-        std::shared_ptr<Message> mess = socket_->peekMessage();
+        std::shared_ptr<Message> mess = socket_->peekBack();
         auto ack = std::dynamic_pointer_cast<Acknowledge>(mess);
         if(ack != nullptr) {
             std::cout << "Ack received for id " << ack->getConsumedPacketId() << "\n";
-            socket_->readMessage();
+            socket_->popBack();
             queue_.remove(ack->getConsumedPacketId());
         } else if(already_ack_.find(mess->id_) != already_ack_.end()) {
             Acknowledge retransmit_ack(mess->id_);
-            socket_->readMessage();
+            socket_->popBack();
             socket_->writeMessage(retransmit_ack);
         } else {
             incommingMessage();
@@ -98,6 +94,7 @@ CommunicationModule CommunicationModule::createClient(uint16_t server_port,
     result.socket_->connect(address, server_port);
     if (result.socket_->waitForConnected(30)) {
         result.prepareSocket();
+        result.retransmitMessages();
     } else {
         throw std::runtime_error("Cannot connect creating Client");
     }
@@ -137,7 +134,8 @@ void CommunicationModule::send(Message *mess) {
 void CommunicationModule::acknowledge(Message* mess) {
     if(already_ack_.find(mess->id_) != already_ack_.end()) {
         // todo should it really? maybe just ignore it?
-        throw std::runtime_error("Trying to ack the same mess twice");
+        //throw std::runtime_error("Trying to ack the same mess twice");
+        return;
     }
     Acknowledge ack(mess->id_);
     socket_->writeMessage(ack);
