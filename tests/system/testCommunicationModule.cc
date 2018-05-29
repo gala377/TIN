@@ -10,8 +10,8 @@
 #include "TestMessage.h"
 
 #define PATH "./gryphon"
-#define PATH0 "./gryphonTest0"
-#define PATH1 "./gryphonTest1"
+#define PATH0 "./Test0"
+#define PATH1 "./Test1"
 
 //TODO define port numbers
 
@@ -73,7 +73,7 @@ TEST(CommunicationTest, OnlyOneClientCanConnect) {
 }
 
 
-TEST(CommunicationTest, AfterDisconactionShouldNotBeAbleToSendMessage) {
+TEST(CommunicationTest, AfterDisconnactionShouldNotBeAbleToSendMessage) {
 
     TestMess *mess = new TestMess("first mss");
     CommunicationModule server = CommunicationModule::createServer(5616, PATH0);
@@ -87,7 +87,7 @@ TEST(CommunicationTest, AfterDisconactionShouldNotBeAbleToSendMessage) {
     delete mess;
 }
 
-TEST(CommunicationTest, AfterDisconactionShouldBeAbleToReadReceivedMessage) {
+TEST(CommunicationTest, AfterDisconnactionShouldBeAbleToReadReceivedMessage) {
 
     TestMess *mess = new TestMess("first mss");
     CommunicationModule server = CommunicationModule::createServer(5616, PATH0);
@@ -345,7 +345,7 @@ TEST(CommunicationTest, WhenSenderHasNotReceivedAckDoNotReadTheSameMessageAgain)
 
 TEST(CommunicationTest, WhenReceivedAckRemoveTheProperMessage) {
 
-    boost::filesystem::remove_all(PATH1);
+    boost::filesystem::remove_all(PATH0);
     TestMess *mess1 = new TestMess("sec");
     {
         CommunicationModule server = CommunicationModule::createServer(5616, PATH0);
@@ -402,19 +402,24 @@ TEST(CommunicationTest, WhenReceivedAckRemoveTheProperMessage1) {
 
     ASSERT_EQ(mess1->_data, dynamic_cast<TestMess *>(receivedMess.get())->_data);
 
+    delete mess0;
     delete mess1;
     boost::filesystem::remove_all(PATH0);
     boost::filesystem::remove_all(PATH1);
 }
 
-TEST(CommunicationTest, WhenReceivedSameAckManyTimesRemoveOnlyOneMessage) {
+TEST(CommunicationTest, WhenReceivedAckManyTimesRemoveOnlyOneMessage) {
 
+    boost::filesystem::remove_all(PATH0);
+    boost::filesystem::remove_all(PATH1);
 
-    TestMess *mess1 = new TestMess("sec");
+    TestMess *mess1 = new TestMess("first");
+    TestMess *mess2 = new TestMess("sec");
     CommunicationModule server = CommunicationModule::createServer(5616, PATH0);
     CommunicationModule client = CommunicationModule::createClient(5616, Sockets::IP({"::1"}), 5617, PATH1);
     server.send(mess1);
-    server.send(mess1);
+    sleep(1);
+    server.send(mess2);
     sleep(1);
     std::shared_ptr<Message> receivedMess0 = client.read();
 
@@ -428,12 +433,15 @@ TEST(CommunicationTest, WhenReceivedSameAckManyTimesRemoveOnlyOneMessage) {
     ASSERT_EQ(1, server.getMessageInStorageCount()); //queue is empty
 
     delete mess1;
+    delete mess2;
     boost::filesystem::remove_all(PATH0);
     boost::filesystem::remove_all(PATH1);
 }
 
-TEST(CommunicationTest, WhenReceivedSameAckToUnknowMessageDoNothing) {
+TEST(CommunicationTest, WhenReceivedAckToUnknowMessageThrowException) {
 
+    boost::filesystem::remove_all(PATH0);
+    boost::filesystem::remove_all(PATH1);
 
     TestMess *mess1 = new TestMess("sec");
     TestMess *mess2 = new TestMess("sec");
@@ -445,6 +453,7 @@ TEST(CommunicationTest, WhenReceivedSameAckToUnknowMessageDoNothing) {
     ASSERT_EQ(1, server.getMessageInStorageCount());
 
     delete mess1;
+    delete mess2;
     boost::filesystem::remove_all(PATH0);
     boost::filesystem::remove_all(PATH1);
 }

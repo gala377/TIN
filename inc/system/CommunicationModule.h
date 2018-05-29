@@ -13,7 +13,7 @@
 #include "sockets/SocketUnix.h"
 #include "queue/FileStorage.h"
 
-static const std::string default_mess_dir_name_ = "gryphon" ;
+static const std::string default_mess_dir_name_ = "./gryphon" ;
 class CommunicationModule {
 public:
     CommunicationModule(CommunicationModule& other) = delete;
