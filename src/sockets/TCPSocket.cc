@@ -67,4 +67,34 @@ namespace Sockets {
     int TCPSocket::availableMessages() {
         return messages_.size();
     }
+
+    bool TCPSocket::waitForMessage(int secs) {
+        FDSet fd_set;
+        fd_set.addRead(getDescriptor());
+        struct timeval time;
+        time.tv_sec = secs;
+        while(true) {
+            socket_interface_->select(fd_set.getBiggestDescriptor() + 1, fd_set.getRead(), NULL, NULL, &time);
+            if (time.tv_sec != 0 || time.tv_usec != 0) {
+                if(fd_set.isSetRead(getDescriptor())) {
+                    if(!readFromSocket())
+                        return false;
+                    else {
+                        if(availableBytes() >= 4) {
+                            const uint32_t *packet_size_address = boost::asio::buffer_cast<const uint32_t *>(
+                                    *buffer_.data().begin());
+
+                            if (availableBytes() >= *packet_size_address) {
+                                buffer_.consume(4);
+                                messages_.push_back(Message::fromBuffer(buffer_));
+                                return true;
+                            }
+                        }
+                    }
+                }
+            } else {
+                return false;
+            }
+        }
+    }
 }

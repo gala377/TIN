@@ -25,6 +25,8 @@ namespace Sockets {
         TCPSocket &operator=(TCPSocket &&other);
         ~TCPSocket();
 
+        bool waitForMessage(int secs);
+
         void writeMessage(Message& message);
 
         std::shared_ptr<Message> readMessage();
