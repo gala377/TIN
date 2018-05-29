@@ -23,14 +23,19 @@ public:
     CommunicationModule& operator=(CommunicationModule&& other);
     ~CommunicationModule();
 
-    static CommunicationModule createServer(uint16_t port, std::string mess_dir_name = default_mess_dir_name_);
-    static CommunicationModule createClient(uint16_t server_port, Sockets::IP address, uint16_t port, std::string mess_dir_name = default_mess_dir_name_);
+    static CommunicationModule createServer(uint16_t port,
+                                            std::string mess_dir_name = default_mess_dir_name_);
+    static CommunicationModule createClient(uint16_t server_port,
+                                            Sockets::IP address, uint16_t port,
+                                            std::string mess_dir_name = default_mess_dir_name_);
 
-    std::string getMessDirName();
-    uint64_t getMessageInStorageCount();
+    std::string getMessDirName() const;
+    std::uint32_t getMessageInStorageCount() const;
 
     std::shared_ptr<Message> read();
     void send(Message* mess);
+    void acknowledge(Message* mess);
+
 
     boost::signals2::signal<void()> incommingMessage;
 private:
@@ -51,6 +56,8 @@ private:
     Queue::FileStorage queue_;
     // todo if needed make it random generated
     std::string mess_dir_name_;
+
+    std::set<std::uint32_t> already_ack_;
 };
 
 #endif //TIN_COMMUNICATIONMODULE_H

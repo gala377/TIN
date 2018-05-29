@@ -88,6 +88,18 @@ std::string FileStorage::padInt(int num) const {
 }
 
 
+std::uint32_t FileStorage::lastAddedId() const {
+    std::string last_mess_path = *(--_files.end());
+    std::string last_mess_file_name = last_mess_path.substr(
+            last_mess_path.find_last_of('/')+1);
+    std::cout << "Last file name is " << last_mess_file_name << "\n";
+    return std::stoi(last_mess_file_name);
+}
+
+std::uint32_t FileStorage::cachedFilesCount() const {
+    return _files.size();
+}
+
 std::set<std::string> FileStorage::listFiles() const {
     std::set<std::string> files;
     for(auto& p: boost::make_iterator_range(fs::directory_iterator(_root))) {

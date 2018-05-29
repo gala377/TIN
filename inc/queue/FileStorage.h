@@ -64,6 +64,17 @@ namespace Queue {
         std::vector<std::shared_ptr<Message>> getAll() override;
 
         /*
+         * Returns id of the last added message.
+         * It works on the assumption that messages will be added in the increasing order.
+         */
+        std::uint32_t lastAddedId() const;
+
+        /*
+         * Returns number of file paths stored in cache
+         */
+        std::uint32_t cachedFilesCount() const;
+
+        /*
         *   Forward iterator for range loop support.
         *   Iterates over files stored under @member _root.
         *   Indirection (*) operator returns Message* stored in file.

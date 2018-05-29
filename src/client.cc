@@ -53,6 +53,8 @@ int main() {
         std::cout << "Read message!\n";
         auto casted = std::dynamic_pointer_cast<MyMess>(pack);
         std::cout << "Content " << casted->_data;
+        std::cout << "Sending acknowledge\n";
+        client.acknowledge(pack.get());
     });
 
     std::cout << "Connection is done!\nWaiting...\n";

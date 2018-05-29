@@ -28,6 +28,7 @@ namespace Sockets {
         void writeMessage(Message& message);
 
         std::shared_ptr<Message> readMessage();
+        std::shared_ptr<Message> peekMessage();
 
         int availableMessages();
 
