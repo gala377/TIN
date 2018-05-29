@@ -68,7 +68,8 @@ TEST(CommunicationTest, OnlyOneClientCanConnect) {
     CommunicationModule server = CommunicationModule::createServer(5618, PATH0);
     CommunicationModule client = CommunicationModule::createClient(5618, Sockets::IP({"::1"}), 5619);
     sleep(1);
-    ASSERT_THROW(CommunicationModule client = CommunicationModule::createClient(5618, Sockets::IP({"::1"}), 5614);, std::exception);
+    ASSERT_THROW(CommunicationModule client = CommunicationModule::createClient(5618, Sockets::IP({"::1"}), 5614);,
+                 std::exception);
 }
 
 
@@ -276,7 +277,38 @@ TEST(CommunicationTest, AfterOtherReconnectResendYourUnconfirmedMessages) {
 
     ASSERT_EQ(messToSend->id_, receivedTest->id_);
     ASSERT_EQ(messToSend->_data, receivedTest->_data);
-    ASSERT_EQ(0, client.getMessageInStorageCount());
+    ASSERT_EQ(0, server.getMessageInStorageCount());
+
+    delete messToSend;
+    boost::filesystem::remove_all(PATH1);
+    boost::filesystem::remove_all(PATH);
+}
+
+
+TEST(CommunicationTest, AfterBothReconnectResendUnconfirmedMessages) {
+
+    boost::filesystem::remove_all(PATH);
+    boost::filesystem::remove_all(PATH1);
+
+    TestMess *messToSend = new TestMess("first mss");
+    {
+        CommunicationModule server = CommunicationModule::createServer(5617);
+        CommunicationModule client0 = CommunicationModule::createClient(5617, Sockets::IP({"::1"}), 5619, PATH1);
+        sleep(1);
+        server.send(messToSend);
+    }
+
+    CommunicationModule server = CommunicationModule::createServer(5617);
+    CommunicationModule client = CommunicationModule::createClient(5617, Sockets::IP({"::1"}), 5619, PATH1);
+    sleep(1);//wait for resend
+
+    std::shared_ptr<Message> receivedMess1 = client.read();
+    client.acknowledge(receivedMess1.get());
+    auto *receivedTest = dynamic_cast<TestMess *>(receivedMess1.get());
+
+    ASSERT_EQ(messToSend->id_, receivedTest->id_);
+    ASSERT_EQ(messToSend->_data, receivedTest->_data);
+    ASSERT_EQ(0, server.getMessageInStorageCount());
 
     delete messToSend;
     boost::filesystem::remove_all(PATH1);
@@ -305,5 +337,110 @@ TEST(CommunicationTest, WhenSenderHasNotReceivedAckDoNotReadTheSameMessageAgain)
 
     delete messToSend;
     boost::filesystem::remove_all(PATH);
+    boost::filesystem::remove_all(PATH1);
+}
+
+TEST(CommunicationTest, WhenReceivedAckRemoveTheProperMessage) {
+
+    TestMess *mess1 = new TestMess("sec");
+    {
+        CommunicationModule server = CommunicationModule::createServer(5616, PATH0);
+        TestMess *mess0 = new TestMess("first");
+        CommunicationModule client = CommunicationModule::createClient(5616, Sockets::IP({"::1"}), 5617, PATH1);
+        sleep(1);
+        server.send(mess0);
+        sleep(1);
+        server.send(mess1);
+        sleep(1);
+        std::shared_ptr<Message> receivedMess0 = client.read();
+        std::shared_ptr<Message> receivedMess1 = client.read();
+        client.acknowledge(receivedMess0.get());
+        delete mess0;
+    }
+
+    CommunicationModule server = CommunicationModule::createServer(5616, PATH0);
+    CommunicationModule client = CommunicationModule::createClient(5616, Sockets::IP({"::1"}), 5618, PATH1);
+    sleep(1); //server will resend message
+
+    std::shared_ptr<Message> receivedMess = client.read();
+
+    ASSERT_EQ(mess1->_data, dynamic_cast<TestMess *>(receivedMess.get())->_data);
+
+    delete mess1;
+    boost::filesystem::remove_all(PATH0);
+    boost::filesystem::remove_all(PATH1);
+}
+
+TEST(CommunicationTest, WhenReceivedAckRemoveTheProperMessage1) {
+
+
+    TestMess *mess1 = new TestMess("sec");
+    {
+        CommunicationModule server = CommunicationModule::createServer(5616, PATH0);
+        TestMess *mess0 = new TestMess("first");
+        CommunicationModule client = CommunicationModule::createClient(5616, Sockets::IP({"::1"}), 5617, PATH1);
+        sleep(1);
+        server.send(mess1);
+        sleep(1);
+        server.send(mess0);
+        sleep(1);
+        std::shared_ptr<Message> receivedMess0 = client.read();
+        std::shared_ptr<Message> receivedMess1 = client.read();
+        client.acknowledge(receivedMess1.get());
+        delete mess0;
+    }
+
+    CommunicationModule server = CommunicationModule::createServer(5616, PATH0);
+    CommunicationModule client = CommunicationModule::createClient(5616, Sockets::IP({"::1"}), 5618, PATH1);
+    sleep(1); //server will resend message
+
+    std::shared_ptr<Message> receivedMess = client.read();
+
+    ASSERT_EQ(mess1->_data, dynamic_cast<TestMess *>(receivedMess.get())->_data);
+
+    delete mess1;
+    boost::filesystem::remove_all(PATH0);
+    boost::filesystem::remove_all(PATH1);
+}
+
+TEST(CommunicationTest, WhenReceivedSameAckManyTimesRemoveOnlyOneMessage) {
+
+
+    TestMess *mess1 = new TestMess("sec");
+    CommunicationModule server = CommunicationModule::createServer(5616, PATH0);
+    CommunicationModule client = CommunicationModule::createClient(5616, Sockets::IP({"::1"}), 5617, PATH1);
+    server.send(mess1);
+    server.send(mess1);
+    sleep(1);
+    std::shared_ptr<Message> receivedMess0 = client.read();
+
+    client.acknowledge(receivedMess0.get());
+    client.acknowledge(receivedMess0.get());
+    client.acknowledge(receivedMess0.get());
+    client.acknowledge(receivedMess0.get());
+    client.acknowledge(receivedMess0.get());
+    sleep(1);
+
+    ASSERT_EQ(1, server.getMessageInStorageCount()); //queue is empty
+
+    delete mess1;
+    boost::filesystem::remove_all(PATH0);
+    boost::filesystem::remove_all(PATH1);
+}
+
+TEST(CommunicationTest, WhenReceivedSameAckToUnknowMessageDoNothing) {
+
+
+    TestMess *mess1 = new TestMess("sec");
+    TestMess *mess2 = new TestMess("sec");
+    CommunicationModule server = CommunicationModule::createServer(5616, PATH0);
+    CommunicationModule client = CommunicationModule::createClient(5616, Sockets::IP({"::1"}), 5617, PATH1);
+    server.send(mess1);
+    client.acknowledge(mess2);
+    sleep(1);
+    ASSERT_EQ(1, server.getMessageInStorageCount());
+
+    delete mess1;
+    boost::filesystem::remove_all(PATH0);
     boost::filesystem::remove_all(PATH1);
 }
