@@ -50,6 +50,10 @@ void CommunicationModule::prepareSocket() {
     std::cout << "Preparing sockets\n";
     socket_->packetReady.connect([=]() {
         std::cout << "Incomming message\n";
+
+        // todo it's wrong !!!
+        // todo change it to back not the front
+        // todo change socket queue to deque
         std::shared_ptr<Message> mess = socket_->peekMessage();
         auto ack = std::dynamic_pointer_cast<Acknowledge>(mess);
         if(ack != nullptr) {
