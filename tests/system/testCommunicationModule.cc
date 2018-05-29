@@ -9,9 +9,9 @@
 #include "../../inc/system/CommunicationModule.h"
 #include "TestMessage.h"
 
-#define PATH "./gryphon/"
-#define PATH0 "./gryphonTest0/"
-#define PATH1 "./gryphonTest1/"
+#define PATH "./gryphon"
+#define PATH0 "./gryphonTest0"
+#define PATH1 "./gryphonTest1"
 
 //TODO define port numbers
 
@@ -229,18 +229,18 @@ TEST(CommunicationTest, AfterReconnectToSomeServerResendUnconfirmedMessage) {
 TEST(CommunicationTest, AfterReconnectToTheSameServerResendUnconfirmedMessage) {
 
     boost::filesystem::remove_all(PATH1);
-    CommunicationModule server = CommunicationModule::createServer(5616);
+    CommunicationModule server = CommunicationModule::createServer(5618);
     TestMess *messToSend = new TestMess("first mss");
     {
         sleep(1);
-        CommunicationModule client0 = CommunicationModule::createClient(5616, Sockets::IP({"::1"}), 5617, PATH1);
+        CommunicationModule client0 = CommunicationModule::createClient(5618, Sockets::IP({"::1"}), 5617, PATH1);
         sleep(1);
         client0.send(messToSend);
         sleep(1);
         std::shared_ptr<Message> receivedMess = server.read(); //msg received, but ack is not sent
     }
     //client 0 have not received ack, client1 should load unconfirmed message and resend it
-    CommunicationModule client1 = CommunicationModule::createClient(5616, Sockets::IP({"::1"}), 5618, PATH1);
+    CommunicationModule client1 = CommunicationModule::createClient(5618, Sockets::IP({"::1"}), 5620, PATH1);
     sleep(1);//wait for resend
     std::shared_ptr<Message> receivedMess1 = server.read();
     auto *receivedTest = dynamic_cast<TestMess *>(receivedMess1.get());
