@@ -27,3 +27,9 @@ const char* UnableToSentMessageClosedConnection::what() const throw() {
     info +=  "Unable to sent message. Connection is closed";
     return info.c_str();
 }
+
+const char* UnknownMessageAcknowledge::what() const throw() {
+    std::string info = SystemError::what();
+    info +=  "Received Acknowledge to unknown message";
+    return info.c_str();
+}

@@ -5,16 +5,17 @@
 #include <gtest/gtest.h>
 #include <boost/filesystem.hpp>
 #include <queue/Exceptions.h>
+#include <system/Exceptions.h>
 #include <pthread.h>
-#include "../../inc/system/CommunicationModule.h"
+#include <system/CommunicationModule.h>
 #include "TestMessage.h"
 
 #define PATH "./gryphon"
 #define PATH0 "./Test0"
 #define PATH1 "./Test1"
 
-#define PORT0 5714
-#define PORT1 5715
+#define PORT0 5724
+#define PORT1 5725
 #define PORT2 5716
 #define PORT3 5717
 
@@ -475,12 +476,14 @@ TEST(CommunicationTest, WhenReceivedAckToUnknowMessageThrowException) {
     TestMess *mess2 = new TestMess("sec");
     CommunicationModule server = CommunicationModule::createServer(PORT0, PATH0);
     CommunicationModule client = CommunicationModule::createClient(PORT0, Sockets::IP({"::1"}), PORT1, PATH1);
+    sleep(1);
     server.send(mess1);
 
-    ASSERT_NO_THROW(
-                     client.acknowledge(mess2);//mess2 does not exist in server's storage
-                     sleep(1);
-                     );
+    ASSERT_THROW(
+            client.acknowledge(mess2);//mess2 does not exist in server's storage
+            sleep(1);
+            ,System::UnknownMessageAcknowledge
+    );
 
     delete mess1;
     delete mess2;
@@ -495,12 +498,11 @@ TEST(CommunicationTest, MessagesInStorageShouldNotBeOverwritten) {
     boost::filesystem::remove_all(PATH1);
     CommunicationModule server = CommunicationModule::createServer(PORT0, PATH0);
     sleep(1);
-    TestMess *messToSend = new TestMess("first mss");
     int recipientsCount = 5;
     int messagesCount = 5;
     for (int j = 0; j < recipientsCount; ++j) {
         CommunicationModule client0 = CommunicationModule::createClient(PORT0, Sockets::IP({"::1"}), PORT1, PATH1);
-        sleep(1);
+        sleep(0.2);
         for (int i = 0; i < messagesCount; ++i) {
             TestMess *messToSend = new TestMess("first mss");
             server.send(messToSend);
@@ -508,12 +510,11 @@ TEST(CommunicationTest, MessagesInStorageShouldNotBeOverwritten) {
             delete messToSend;
         }
         boost::filesystem::remove_all(PATH1);
-        sleep(1);
+        sleep(0.2);
     }
 
     ASSERT_EQ(recipientsCount*messagesCount, server.getMessageInStorageCount());
 
-    delete messToSend;
     boost::filesystem::remove_all(PATH1);
     boost::filesystem::remove_all(PATH);
 }

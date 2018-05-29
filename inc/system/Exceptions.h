@@ -35,5 +35,11 @@ namespace System {
 
         virtual const char *what() const throw();
     };
+    class UnknownMessageAcknowledge: public SystemError {
+    public:
+        UnknownMessageAcknowledge() = default;
+
+        virtual const char *what() const throw();
+    };
 }
 #endif //TIN_EXCEPTIONS_H

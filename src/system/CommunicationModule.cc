@@ -56,6 +56,9 @@ void CommunicationModule::prepareSocket() {
         if(ack != nullptr) {
             std::cout << "Ack received for id " << ack->getConsumedPacketId() << "\n";
             socket_->popBack();
+            if(!queue_.containsFile(ack->getConsumedPacketId())){
+                throw System::UnknownMessageAcknowledge();
+            }
             queue_.remove(ack->getConsumedPacketId());
         } else if(already_ack_.find(mess->id_) != already_ack_.end()) {
             Acknowledge retransmit_ack(mess->id_);
