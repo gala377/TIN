@@ -49,16 +49,21 @@ TEST(CommunicationTest, EstablishConnectionServerFirst) {
 }
 
 TEST(CommunicationTest, WhenServerReadingEmptyQueueExceptionIsThrown) {
+
+    boost::filesystem::remove_all(PATH0);
+    boost::filesystem::remove_all(PATH1);
     CommunicationModule server = CommunicationModule::createServer(5618, PATH0);
-    CommunicationModule client = CommunicationModule::createClient(5618, Sockets::IP({"::1"}), 5619);
+    CommunicationModule client = CommunicationModule::createClient(5618, Sockets::IP({"::1"}), 5619, PATH1);
     sleep(1);
     ASSERT_THROW(server.read(), std::exception);
 }
 
 TEST(CommunicationTest, WhenClientReadingEmptyQueueExceptionIsThrown) {
 
+    boost::filesystem::remove_all(PATH0);
+    boost::filesystem::remove_all(PATH1);
     CommunicationModule server = CommunicationModule::createServer(5616, PATH0);
-    CommunicationModule client = CommunicationModule::createClient(5616, Sockets::IP({"::1"}), 5617);
+    CommunicationModule client = CommunicationModule::createClient(5616, Sockets::IP({"::1"}), 5617, PATH1);
     sleep(1);
     ASSERT_THROW(client.read(), std::exception);
 }
@@ -68,8 +73,14 @@ TEST(CommunicationTest, OnlyOneClientCanConnect) {
     CommunicationModule server = CommunicationModule::createServer(5618, PATH0);
     CommunicationModule client = CommunicationModule::createClient(5618, Sockets::IP({"::1"}), 5619);
     sleep(1);
-    ASSERT_THROW(CommunicationModule client = CommunicationModule::createClient(5618, Sockets::IP({"::1"}), 5614);,
-                 std::exception);
+    CommunicationModule client2 = CommunicationModule::createClient(5618, Sockets::IP({"::1"}), 5614, PATH1);
+    Message *mess = new TestMess("A");
+    client.send(mess);
+    client2.send(mess);
+
+    delete mess;
+    boost::filesystem::remove_all(PATH0);
+    boost::filesystem::remove_all(PATH1);
 }
 
 
@@ -85,14 +96,18 @@ TEST(CommunicationTest, AfterDisconnactionShouldNotBeAbleToSendMessage) {
     ASSERT_THROW(server.send(mess), std::exception);
 
     delete mess;
+    boost::filesystem::remove_all(PATH0);
 }
 
 TEST(CommunicationTest, AfterDisconnactionShouldBeAbleToReadReceivedMessage) {
 
+    boost::filesystem::remove_all(PATH0);
+    boost::filesystem::remove_all(PATH1);
+
     TestMess *mess = new TestMess("first mss");
     CommunicationModule server = CommunicationModule::createServer(5616, PATH0);
     {
-        CommunicationModule client = CommunicationModule::createClient(5616, Sockets::IP({"::1"}), 5617);
+        CommunicationModule client = CommunicationModule::createClient(5616, Sockets::IP({"::1"}), 5617 , PATH1);
         client.send(mess);
     }
     sleep(1);
@@ -102,6 +117,10 @@ TEST(CommunicationTest, AfterDisconnactionShouldBeAbleToReadReceivedMessage) {
     ASSERT_EQ(mess->id_, dynamic_cast<TestMess *>(receivedMess.get())->id_);
 
     delete mess;
+
+    boost::filesystem::remove_all(PATH0);
+    boost::filesystem::remove_all(PATH1);
+
 }
 
 
@@ -123,6 +142,9 @@ TEST(CommunicationTest, ReceiveMessageWithDefaultDictionaries) {
 }
 
 TEST(CommunicationTest, ReceiveMessageWithCustomDictionaries) {
+
+    boost::filesystem::remove_all(PATH0);
+    boost::filesystem::remove_all(PATH1);
 
     CommunicationModule server = CommunicationModule::createServer(5618, PATH0);
     CommunicationModule client = CommunicationModule::createClient(5618, Sockets::IP({"::1"}), 5619, PATH1);
@@ -444,12 +466,14 @@ TEST(CommunicationTest, WhenReceivedAckToUnknowMessageThrowException) {
 
     TestMess *mess1 = new TestMess("sec");
     TestMess *mess2 = new TestMess("sec");
-    CommunicationModule server = CommunicationModule::createServer(5616, PATH0);
-    CommunicationModule client = CommunicationModule::createClient(5616, Sockets::IP({"::1"}), 5617, PATH1);
+    CommunicationModule server = CommunicationModule::createServer(5617, PATH0);
+    CommunicationModule client = CommunicationModule::createClient(5617, Sockets::IP({"::1"}), 5616, PATH1);
     server.send(mess1);
-    client.acknowledge(mess2);
-    sleep(1);
-    ASSERT_EQ(1, server.getMessageInStorageCount());
+
+    ASSERT_THROW(
+                     client.acknowledge(mess2);//mess2 does not exist in server's storage
+                     sleep(1);
+                 , Queue::FileDoesNotExist);
 
     delete mess1;
     delete mess2;
