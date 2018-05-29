@@ -42,11 +42,11 @@ namespace Sockets {
     TCPSocket::~TCPSocket() {
     }
 
-    void TCPSocket::writeMessage(Message& message) {
+    int TCPSocket::writeMessage(Message& message) {
         std::string message_data = "0000" + message.toString();
         uint32_t *message_size = reinterpret_cast<uint32_t *>(&message_data[0]);
         *message_size = uint32_t(message_data.size());
-        write(message_data);
+        return write(message_data);
     }
 
     std::shared_ptr<Message> TCPSocket::readMessage() {

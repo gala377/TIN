@@ -76,7 +76,9 @@ TEST(CommunicationTest, OnlyOneClientCanConnect) {
     CommunicationModule client2 = CommunicationModule::createClient(5618, Sockets::IP({"::1"}), 5614, PATH1);
     Message *mess = new TestMess("A");
     client.send(mess);
-    client2.send(mess);
+
+    ASSERT_NO_THROW(client.read());
+    ASSERT_THROW(client2.read(), std::exception);
 
     delete mess;
     boost::filesystem::remove_all(PATH0);
@@ -86,6 +88,7 @@ TEST(CommunicationTest, OnlyOneClientCanConnect) {
 
 TEST(CommunicationTest, AfterDisconnactionShouldNotBeAbleToSendMessage) {
 
+    boost::filesystem::remove_all(PATH0);
     TestMess *mess = new TestMess("first mss");
     CommunicationModule server = CommunicationModule::createServer(5616, PATH0);
     {

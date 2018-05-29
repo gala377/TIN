@@ -130,7 +130,9 @@ std::shared_ptr<Message> CommunicationModule::read() {
 void CommunicationModule::send(Message *mess) {
     queue_.add(*mess);
     std::cout << "Last send mess is: " << queue_.lastAddedId() << "\n";
-    socket_->writeMessage(*mess);
+    if(socket_->writeMessage(*mess) <0){
+        throw std::runtime_error("unable to send message, connection is closed");
+    };
 }
 
 void CommunicationModule::acknowledge(Message* mess) {
