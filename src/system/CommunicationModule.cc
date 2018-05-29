@@ -106,13 +106,14 @@ CommunicationModule::CommunicationModule(CommunicationModule &&other) :
         server_(std::move(other.server_)),
         socket_(std::move(other.socket_)),
         supervisor_(other.supervisor_),
-        queue_(mess_dir_name_) {
+        queue_(other.mess_dir_name_) {
 }
 
 CommunicationModule &CommunicationModule::operator=(CommunicationModule &&other) {
     server_ = std::move(other.server_);
     socket_ = std::move(other.socket_);
     supervisor_ = std::move(other.supervisor_);
+    queue_= std::move(other.queue_);
 }
 
 
