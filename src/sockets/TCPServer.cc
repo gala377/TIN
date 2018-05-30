@@ -126,6 +126,7 @@ namespace Sockets {
         fd_set.addRead(socket_);
         struct timeval timeout;
         timeout.tv_sec = secs;
+        timeout.tv_usec = 0;
         int status = socket_interface_->select(fd_set.getBiggestDescriptor()+1, fd_set.getRead(), NULL, NULL, &timeout);
         if (status == 0) {
             return false;
