@@ -1,5 +1,6 @@
 //
-// Created by gajus123 on 21.04.18.
+// \author Jakub Gajownik
+// \date 21.04.2018
 //
 
 #ifndef TIN_SOCKETSUPERVISOR_H
@@ -15,10 +16,15 @@
 #include "FDSet.h"
 
 namespace Sockets {
+    /*!
+     * \class SocketSupervisor
+     * \brief Separate thread socket selecting
+     *
+     * Run in separate thread and check whether sockets have active read/write sending appropriate signals
+     */
     class SocketSupervisor {
     public:
         SocketSupervisor(SocketFacade *socket_interface);
-
         ~SocketSupervisor();
 
         void add(TCPSocketBase *socket);
@@ -26,12 +32,9 @@ namespace Sockets {
 
         void remove(TCPSocketBase *socket);
         void remove(TCPServer *server);
-
     private:
         void update();
-
         void loop();
-
         void stop();
 
         SocketFacade *socket_interface_;

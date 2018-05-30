@@ -1,5 +1,6 @@
 //
-// Created by gajus123 on 18.04.18.
+// \author Jakub Gajownik
+// \date 18.04.2018
 //
 
 #ifndef TIN_TCPSOCKETBASE_H

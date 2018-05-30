@@ -19,7 +19,7 @@ namespace Sockets {
         readyRead.connect([&]() {
             while(true) {
                 if(privateReadMessage())
-                    packetReady();
+                    incommingMessage();
                 else
                     break;
             }

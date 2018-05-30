@@ -49,7 +49,7 @@ void CommunicationModule::retransmitMessages() {
 
 void CommunicationModule::prepareSocket() {
     std::cout << "Preparing sockets\n";
-    socket_->packetReady.connect([=]() {
+    socket_->incommingMessage.connect([=]() {
         std::cout << "Incomming message\n";
         std::shared_ptr<Message> mess = socket_->peekBack();
         auto ack = std::dynamic_pointer_cast<Acknowledge>(mess);

@@ -232,11 +232,11 @@ namespace Sockets {
         return socket_interface_->availableBytes(socket_);
     }
 
-    bool TCPSocketBase::waitForConnected(int timeout) {
+    bool TCPSocketBase::waitForConnected(int secs) {
         FDSet fd_set;
         fd_set.addWrite(socket_);
         struct timeval time;
-        time.tv_sec = timeout;
+        time.tv_sec = secs;
         socket_interface_->select(fd_set.getBiggestDescriptor()+1, NULL, fd_set.getWrite(), NULL, &time);
         if(time.tv_sec != 0 || time.tv_usec != 0) {
             return connect();

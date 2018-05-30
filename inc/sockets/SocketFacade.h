@@ -1,5 +1,6 @@
 //
-// Created by gajus123 on 25.04.18.
+// \author Jakub Gajownik
+// \date 25.04.2018
 //
 
 #ifndef TIN_SOCKETFACADE_H
