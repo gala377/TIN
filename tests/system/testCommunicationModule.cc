@@ -239,7 +239,7 @@ TEST(CommunicationTest, AfterReconnectToSomeServerResendUnconfirmedMessage) {
     CommunicationModule server = CommunicationModule::createServer(PORT2);
     sleep(1);
     CommunicationModule client1 = CommunicationModule::createClient(PORT2, Sockets::IP({"::1"}), PORT1, PATH1);
-    sleep(1);//wait for resend
+    sleep(2);//wait for resend
     std::shared_ptr<Message> receivedMess1 = server.read();
     auto *receivedTest = dynamic_cast<TestMess *>(receivedMess1.get());
     server.acknowledge(receivedMess1.get());
@@ -269,7 +269,7 @@ TEST(CommunicationTest, AfterReconnectToTheSameServerResendUnconfirmedMessage) {
     }
     //client 0 have not received ack, client1 should load unconfirmed message and resend it
     CommunicationModule client1 = CommunicationModule::createClient(PORT0, Sockets::IP({"::1"}), PORT3, PATH1);
-    sleep(1);//wait for resend
+    sleep(2);//wait for resend
     std::shared_ptr<Message> receivedMess1 = server.read();
     auto *receivedTest = dynamic_cast<TestMess *>(receivedMess1.get());
     server.acknowledge(receivedMess1.get());
@@ -300,7 +300,7 @@ TEST(CommunicationTest, AfterOtherReconnectResendYourUnconfirmedMessages) {
 
     sleep(1);
     CommunicationModule client = CommunicationModule::createClient(PORT0, Sockets::IP({"::1"}), PORT3, PATH0);
-    sleep(1);//wait for resend
+    sleep(4);//wait for resend
 
     std::shared_ptr<Message> receivedMess1 = client.read();
 
@@ -363,7 +363,7 @@ TEST(CommunicationTest, WhenSenderHasNotReceivedAckDoNotReadTheSameMessageAgain)
     server.acknowledge(receivedMess.get());
 
     CommunicationModule client1 = CommunicationModule::createClient(PORT0, Sockets::IP({"::1"}), PORT3, PATH1);
-    sleep(1);
+    sleep(3);
 
     ASSERT_THROW(server.read(), System::NoMessageToRead); //queue is empty
 
@@ -392,7 +392,7 @@ TEST(CommunicationTest, WhenReceivedAckRemoveTheProperMessage) {
     }
 
     CommunicationModule client = CommunicationModule::createClient(PORT0, Sockets::IP({"::1"}), PORT3, PATH1);
-    sleep(1); //server will resend message
+    sleep(3); //server will resend message
 
     std::shared_ptr<Message> receivedMess = client.read();
 
