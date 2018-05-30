@@ -12,8 +12,9 @@
 #include "sockets/SocketSupervisor.h"
 #include "sockets/SocketUnix.h"
 #include "queue/FileStorage.h"
+#include "Exceptions.h"
 
-static const std::string default_mess_dir_name_ = "gryphon" ;
+static const std::string default_mess_dir_name_ = "./gryphon" ;
 class CommunicationModule {
 public:
     CommunicationModule(CommunicationModule& other) = delete;
@@ -55,7 +56,6 @@ private:
     } state_;
 
     Queue::FileStorage queue_;
-    // todo if needed make it random generated
     std::string mess_dir_name_;
 
     std::set<std::uint32_t> already_ack_;

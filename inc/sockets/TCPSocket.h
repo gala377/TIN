@@ -42,7 +42,7 @@ namespace Sockets {
          * Serialize message and write it to socket
          * @param message Message to be send
          */
-        void writeMessage(Message& message);
+        int writeMessage(Message& message);
 
         /*!
          * @return Pointer to received message

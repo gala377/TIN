@@ -10,7 +10,7 @@
 #include "../../inc/messages/Acknowledge.h"
 #include "../../inc/messages/Message.h"
 
-#define PATH "./tempTest/"
+#define PATH "./tempTest"
 using namespace Queue;
 
 

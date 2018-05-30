@@ -72,6 +72,10 @@ std::vector<std::shared_ptr<Message>> FileStorage::getAll() {
     return mess;
 }
 
+bool FileStorage::containsFile(int id) const  {
+    auto file_path = makePath(id);
+    return !(_files.find(file_path) == _files.end());
+}
 
 std::string FileStorage::makePath(int id) const {
     return _root.string() + "/" + padInt(id);

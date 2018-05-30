@@ -83,6 +83,9 @@ void CommunicationModule::prepareSocket() {
         if(ack != nullptr) {
             std::cout << "Ack received for id " << ack->getConsumedPacketId() << "\n";
             socket_->popBack();
+            if(!queue_.containsFile(ack->getConsumedPacketId())){
+                throw System::UnknownMessageAcknowledge();
+            }
             queue_.remove(ack->getConsumedPacketId());
         } else if(already_ack_.find(mess->id_) != already_ack_.end()) {
             Acknowledge retransmit_ack(mess->id_);
@@ -126,7 +129,7 @@ CommunicationModule CommunicationModule::createClient(uint16_t server_port,
         result.prepareSocket();
         result.retransmitMessages();
     } else {
-        throw std::runtime_error("Cannot connect creating Client");
+        throw System::CanNotConnect();
     }
     return result;
 }
@@ -136,20 +139,21 @@ CommunicationModule::CommunicationModule(CommunicationModule &&other) :
         server_(std::move(other.server_)),
         socket_(std::move(other.socket_)),
         supervisor_(other.supervisor_),
-        queue_(mess_dir_name_) {
+        queue_(other.mess_dir_name_) {
 }
 
 CommunicationModule &CommunicationModule::operator=(CommunicationModule &&other) {
     server_ = std::move(other.server_);
     socket_ = std::move(other.socket_);
     supervisor_ = std::move(other.supervisor_);
+    queue_= std::move(other.queue_);
 }
 
 
 std::shared_ptr<Message> CommunicationModule::read() {
     if (!socket_->availableMessages()) {
         // todo custom exception
-        throw std::runtime_error("No messages to read!");
+        throw System::NoMessageToRead();
     }
     std::shared_ptr<Message> receivedMess = socket_->readMessage();
     return receivedMess;
@@ -158,7 +162,9 @@ std::shared_ptr<Message> CommunicationModule::read() {
 void CommunicationModule::send(Message *mess) {
     queue_.add(*mess);
     std::cout << "Last send mess is: " << queue_.lastAddedId() << "\n";
-    socket_->writeMessage(*mess);
+    if(socket_->writeMessage(*mess) <0){
+        throw System::UnableToSentMessageClosedConnection();
+    };
 }
 
 void CommunicationModule::acknowledge(Message* mess) {

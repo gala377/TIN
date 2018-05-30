@@ -73,7 +73,10 @@ namespace Queue {
          * Returns number of file paths stored in cache
          */
         std::uint32_t cachedFilesCount() const;
-
+        /*
+         * Check if file exists in storage
+         */
+        bool containsFile(int id) const;
         /*
         *   Forward iterator for range loop support.
         *   Iterates over files stored under @member _root.
