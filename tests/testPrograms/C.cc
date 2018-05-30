@@ -18,27 +18,10 @@
 #include <system/CommunicationModule.h>
 #include <sockets/SocketHelpers.h>
 
+#include "MyMess.h"
 
-class MyMess: public Message {
-public:
-    MyMess(): _data("") {}
-    MyMess(std::string data): _data(std::move(data)) {}
-    std::string _data;
+CommunicationModule initClient(){
 
-private:
-    friend class boost::serialization::access;
-
-    template<class Archive>
-    void serialize(Archive &ar, const unsigned int version) {
-        ar & boost::serialization::base_object<Message>(*this);
-        ar & _data;
-    }
-};
-
-BOOST_CLASS_EXPORT(MyMess)
-
-
-int main() {
     int clientPort, otherServerPort;
     std::cout << "Creating receiver (C)\nChoose port for receiver client\n";
     std::cin >> clientPort;
@@ -48,7 +31,11 @@ int main() {
     std::string dir;
     std::cin >> dir;
 
-    auto client = CommunicationModule::createClient(otherServerPort, Sockets::IP({"::1"}), clientPort, dir);
+    return CommunicationModule::createClient(otherServerPort, Sockets::IP({"::1"}), clientPort, dir);
+}
+
+int main() {
+    auto client = initClient();
     sleep(2);
 
     std::queue<std::shared_ptr<MyMess>> stored;

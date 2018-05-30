@@ -14,88 +14,64 @@
 #include <boost/serialization/export.hpp>
 #include <boost/asio/streambuf.hpp>
 
-#include <messages/Message.h>
 #include <system/CommunicationModule.h>
 #include <sockets/SocketHelpers.h>
 
-
-class MyMess: public Message {
-public:
-    MyMess(): _data("") {}
-    MyMess(std::string data): _data(std::move(data)) {}
-    std::string _data;
-
-private:
-    friend class boost::serialization::access;
-
-    template<class Archive>
-    void serialize(Archive &ar, const unsigned int version) {
-        ar & boost::serialization::base_object<Message>(*this);
-        ar & _data;
-    }
-};
-
-BOOST_CLASS_EXPORT(MyMess)
+#include "MyMess.h"
 
 
-int main(){
-
-    int serverPort, clientPort, otherServerPort;
+CommunicationModule initServer() {
+    int serverPort;
     std::cout << "Creating MiddleMan (B)\nChoose port for MiddleMan server\n";
     std::cin >> serverPort;
+    std::cout << "Choose module dir path\n1: ";
+    std::string dir0;
+    std::cin >> dir0;
+   return CommunicationModule::createServer(serverPort, dir0);
+}
+CommunicationModule initClient(){
+    int clientPort, otherServerPort;
     std::cout << "Choose port for MiddleMan client\n";
     std::cin >> clientPort;
-
     std::cout << "Choose second server (sender) port\n";
     std::cin >> otherServerPort;
-    std::cout << "Give dwo dir paths\n1: ";
-    std::string dir0, dir1;
-    std::cin >> dir0;
-    std::cout << "2: ";
+    std::cout << "Choose second dir path\n1: ";
+    std::string dir1;
     std::cin >> dir1;
+
+    return CommunicationModule::createClient(otherServerPort, Sockets::IP({"::1"}), clientPort, dir1);
+}
+int main(){
 
     std::queue<std::shared_ptr<MyMess>> storedFromReceiver;
     std::queue<std::shared_ptr<MyMess>> storedFromSender;
-    auto server = CommunicationModule::createServer(serverPort, dir0);
-    sleep(2);
-    auto client = CommunicationModule::createClient(otherServerPort, Sockets::IP({"::1"}), clientPort, dir1);
+    auto server = initServer();
+    auto client = initClient();
 
-    server.incommingMessage.connect([&server, &client, &storedFromReceiver](){
+    server.incommingMessage.connect([&server, &client](){
         std::cout << "Got message from receiver!\n";
         auto pack = server.read();
+        server.acknowledge(pack.get());
         auto casted = std::dynamic_pointer_cast<MyMess>(pack);
         std::cout << "Content " << casted->_data << "\n";
         std::cout << "Send receivedMessage to sender.\n";
         client.send(pack.get());
-
-        std::cout << "Adding to queue.\n";
-        storedFromReceiver.push(casted);
     });
-    client.incommingMessage.connect([&client, &server, &storedFromSender](){
+    client.incommingMessage.connect([&client, &server](){
         std::cout << "Got message from sender!\n";
         auto pack = client.read();
+        client.acknowledge(pack.get());
         auto casted = std::dynamic_pointer_cast<MyMess>(pack);
         std::cout << "Content " << casted->_data << "\n";
         std::cout << "Send receivedMessage to receiver.\n";
         server.send(pack.get());
-
-        std::cout << "Adding to queue.\n";
-        storedFromSender.push(casted);
     });
     while(true) {
-        std::cout << "Q to quit. R to ack to receiver, S send ack to sender\n";
+        std::cout << "Q to quit.\n";
         char c;
         std::cin >> c;
         if(c == 'Q') {
             break;
-        } else if(c == 'R') {
-            auto mess = storedFromReceiver.front();
-            storedFromReceiver.pop();
-            server.acknowledge(mess.get());
-        }else if(c == 'S') {
-            auto mess = storedFromSender.front();
-            storedFromSender.pop();
-            client.acknowledge(mess.get());
         }
     }
     std::cout << "Closing...";

@@ -18,33 +18,20 @@
 #include <sockets/SocketHelpers.h>
 #include <queue>
 
+#include "MyMess.h"
 
-class MyMess: public Message {
-public:
-    MyMess(): _data("") {}
-    MyMess(std::string data): _data(std::move(data)) {}
-    std::string _data;
-
-private:
-    friend class boost::serialization::access;
-
-    template<class Archive>
-    void serialize(Archive &ar, const unsigned int version) {
-        ar & boost::serialization::base_object<Message>(*this);
-        ar & _data;
-    }
-};
-
-BOOST_CLASS_EXPORT(MyMess)
-
-int main() {
+CommunicationModule initServer() {
     std::cout << "Creating sender(A) \nChoose port for sender server\n";
     int port;
     std::cin >> port;
     std::cout << "Give module dir path\n";
     std::string dir;
     std::cin >> dir;
-    auto server = CommunicationModule::createServer(port, dir);
+    return CommunicationModule::createServer(port, dir);
+}
+
+int main() {
+    auto server = initServer();
 
     std::queue<std::shared_ptr<MyMess>> stored;
     server.incommingMessage.connect([&server, &stored](){
