@@ -13,6 +13,7 @@ CommunicationModule::CommunicationModule(uint16_t port, std::string mess_dir_nam
         if (state_ == State::UNCONNECTED) {
             std::cout << "Connected now\n";
             socket_ = server_.accept();
+            socket_->waitForConnected(2);
             setMessId();
             prepareSocket();
             state_ = State::CONNECTED;
@@ -24,6 +25,7 @@ CommunicationModule::CommunicationModule(uint16_t port, std::string mess_dir_nam
         } else if (state_ == State::DISCONNECTED) {
             std::cout << "New connection - accepted\n";
             socket_ = server_.accept();
+            socket_->waitForConnected(2);
             setMessId();
             prepareSocket();
             state_ = State::CONNECTED;
