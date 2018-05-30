@@ -55,7 +55,7 @@ CommunicationModule getModule(char option) {
         std::cin >> temp_dir;
         return CommunicationModule::createClient(server_port, Sockets::IP({"::1"}), client_port, temp_dir);
     } else {
-        throw std::runtime_error("Option not supported.");
+        throw System::UnsupportedOption();
     }
 }
 

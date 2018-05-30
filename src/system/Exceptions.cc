@@ -7,7 +7,7 @@
 using namespace System;
 
 const char* SystemError::what() const throw() {
-    return "SystemError";
+    return "Gryphon module error";
 }
 
 const char* NoMessageToRead::what() const throw() {
@@ -16,13 +16,13 @@ const char* NoMessageToRead::what() const throw() {
     return info.c_str();
 }
 
-const char* CanNotConnect::what() const throw() {
+const char* ConnectionTimeOut::what() const throw() {
     std::string info = SystemError::what();
     info +=  "Can not connect";
     return info.c_str();
 }
 
-const char* UnableToSentMessageClosedConnection::what() const throw() {
+const char* UnableToSentMessageConnectionClosed::what() const throw() {
     std::string info = SystemError::what();
     info +=  "Unable to sent message. Connection is closed";
     return info.c_str();
@@ -31,5 +31,11 @@ const char* UnableToSentMessageClosedConnection::what() const throw() {
 const char* UnknownMessageAcknowledge::what() const throw() {
     std::string info = SystemError::what();
     info +=  "Received Acknowledge to unknown message";
+    return info.c_str();
+}
+
+const char* UnsupportedOption::what() const throw() {
+    std::string info = SystemError::what();
+    info +=  "Option not supported";
     return info.c_str();
 }

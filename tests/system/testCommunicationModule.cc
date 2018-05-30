@@ -40,7 +40,7 @@ TEST(CommunicationTest, EstablishConnectionClientFirst) {
                      CommunicationModule client = CommunicationModule::createClient(PORT0, Sockets::IP({"::1"}), PORT1);
                      sleep(1);
                      CommunicationModule server = CommunicationModule::createServer(PORT0);
-                 }, System::CanNotConnect
+                 }, System::ConnectionTimeOut
     );
 }
 
@@ -101,7 +101,7 @@ TEST(CommunicationTest, AfterDisconnactionShouldNotBeAbleToSendMessage) {
     }
     sleep(1);
 
-    ASSERT_THROW(server.send(mess), System::UnableToSentMessageClosedConnection);
+    ASSERT_THROW(server.send(mess), System::UnableToSentMessageConnectionClosed);
 
     delete mess;
     boost::filesystem::remove_all(PATH0);

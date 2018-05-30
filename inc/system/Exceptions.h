@@ -22,22 +22,30 @@ namespace System {
         virtual const char* what() const throw();
     };
 
-    class CanNotConnect: public SystemError {
+    class ConnectionTimeOut: public SystemError {
     public:
-        CanNotConnect() = default;
+        ConnectionTimeOut() = default;
 
         virtual const char *what() const throw();
     };
 
-    class UnableToSentMessageClosedConnection: public SystemError {
+    class UnableToSentMessageConnectionClosed: public SystemError {
     public:
-        UnableToSentMessageClosedConnection() = default;
+        UnableToSentMessageConnectionClosed() = default;
 
         virtual const char *what() const throw();
     };
+
     class UnknownMessageAcknowledge: public SystemError {
     public:
         UnknownMessageAcknowledge() = default;
+
+        virtual const char *what() const throw();
+    };
+
+    class UnsupportedOption: public SystemError {
+    public:
+        UnsupportedOption() = default;
 
         virtual const char *what() const throw();
     };

@@ -63,7 +63,7 @@ void CommunicationModule::setMessId() {
     std::cout << "Read responce. Casting it to ACK.\n";
     auto casted = std::dynamic_pointer_cast<Acknowledge>(resp);
     if(casted == nullptr) {
-        throw std::runtime_error("Handshake not completed.");
+        throw System::ConnectionTimeOut();
     }
     std::cout << "Completed. Getting response id.\n";
     auto resp_id = casted->getConsumedPacketId();
@@ -129,7 +129,7 @@ CommunicationModule CommunicationModule::createClient(uint16_t server_port,
         result.prepareSocket();
         result.retransmitMessages();
     } else {
-        throw System::CanNotConnect();
+        throw System::ConnectionTimeOut();
     }
     return result;
 }
@@ -152,7 +152,6 @@ CommunicationModule &CommunicationModule::operator=(CommunicationModule &&other)
 
 std::shared_ptr<Message> CommunicationModule::read() {
     if (!socket_->availableMessages()) {
-        // todo custom exception
         throw System::NoMessageToRead();
     }
     std::shared_ptr<Message> receivedMess = socket_->readMessage();
@@ -163,14 +162,12 @@ void CommunicationModule::send(Message *mess) {
     queue_.add(*mess);
     std::cout << "Last send mess is: " << queue_.lastAddedId() << "\n";
     if(socket_->writeMessage(*mess) <0){
-        throw System::UnableToSentMessageClosedConnection();
+        throw System::UnableToSentMessageConnectionClosed();
     };
 }
 
 void CommunicationModule::acknowledge(Message* mess) {
     if(already_ack_.find(mess->id_) != already_ack_.end()) {
-        // todo should it really? maybe just ignore it?
-        //throw std::runtime_error("Trying to ack the same mess twice");
         return;
     }
     Acknowledge ack(mess->id_);
