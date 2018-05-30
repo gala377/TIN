@@ -42,12 +42,7 @@ namespace Sockets {
 
     void TCPServer::close() {
         if (!closed_) {
-            if (socket_interface_->close(socket_) == -1) {
-//TODO error handling
-                std::cout << strerror(errno) << "\n";
-                return;
-            }
-
+            socket_interface_->close(socket_);
             closed_ = true;
             socket_ = 0;
         }
@@ -56,33 +51,11 @@ namespace Sockets {
     bool TCPServer::listen(in6_addr address, uint16_t server_port) {
         struct sockaddr_in6 server = createAddress(address, server_port);
         if (socket_interface_->bind(socket_, (struct sockaddr *) &server, sizeof(server)) == -1) {
-            throw SocketInitializationException();
-            //std::cout << strerror(socket_interface_->getErrno()) << "\n";
-            switch (socket_interface_->getErrno()) {
-                case EADDRINUSE:
-                    setError(SocketError::ADDRESS_IN_USE);
-                    break;
-                case EACCES:
-                    setError(SocketError::ACCESS_ERROR);
-                    break;
-                case EINVAL:
-                    setError(SocketError::UNSUPPORTED_OPERATION);
-                    break;
-                case EADDRNOTAVAIL:
-                    setError(SocketError::ADDRESS_NOT_AVAILABLE);
-                    break;
-            }
-            return false;
+            throw SocketBindException();
         }
 
         if (socket_interface_->listen(socket_, 1) == -1) {
-            throw SocketInitializationException();
-            switch (socket_interface_->getErrno()) {
-                case EADDRINUSE:
-                    setError(SocketError::ADDRESS_IN_USE);
-                    break;
-            }
-            return false;
+            throw SocketListenException();
         }
         return true;
     }
@@ -104,7 +77,6 @@ namespace Sockets {
         socklen_t lenght;
         int status = socket_interface_->accept(socket_, (struct sockaddr *) &address, (socklen_t *) &lenght);
         if (status == -1) {
-            std::cout << "[Accept] " << strerror(socket_interface_->getErrno()) << "\n";
             switch (errno) {
                 case EBADF:
                 case EOPNOTSUPP:
@@ -149,20 +121,16 @@ namespace Sockets {
         error_ = error;
     }
 
-    bool TCPServer::waitForConnection(int ms) {
-        fd_set set;
-        FD_ZERO(&set);
-        FD_SET(socket_, &set);
+    bool TCPServer::waitForConnection(int secs) {
+        FDSet fd_set;
+        fd_set.addRead(socket_);
         struct timeval timeout;
-        timeout.tv_sec = ms / 1000;
-        timeout.tv_usec = (ms % 1000) * 1000;
-        int status = socket_interface_->select(socket_ + 1, &set, NULL, NULL, &timeout);
-        if (status == -1) {
-            std::cout << "Select error: " << strerror(errno) << "\n";
-        } else if (status == 0) {
+        timeout.tv_sec = secs;
+        int status = socket_interface_->select(fd_set.getBiggestDescriptor()+1, fd_set.getRead(), NULL, NULL, &timeout);
+        if (status == 0) {
             return false;
-        } else {
-            if (FD_ISSET(socket_, &set)) {
+        } else if(status != -1){
+            if(fd_set.isSetRead(socket_)) {
                 return true;
             }
         }

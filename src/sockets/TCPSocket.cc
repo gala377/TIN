@@ -17,15 +17,11 @@ namespace Sockets {
 
     void TCPSocket::createMessageHandler() {
         readyRead.connect([&]() {
-            while (availableBytes() >= 4) {
-                const uint32_t *packet_size_address = boost::asio::buffer_cast<const uint32_t *>(
-                        *buffer_.data().begin());
-
-                if (availableBytes() >= *packet_size_address) {
-                    buffer_.consume(4);
-                    messages_.push_back(Message::fromBuffer(buffer_));
+            while(true) {
+                if(privateReadMessage())
                     packetReady();
-                }
+                else
+                    break;
             }
         });
     }
@@ -80,21 +76,31 @@ namespace Sockets {
                     if(!readFromSocket())
                         return false;
                     else {
-                        if(availableBytes() >= 4) {
-                            const uint32_t *packet_size_address = boost::asio::buffer_cast<const uint32_t *>(
-                                    *buffer_.data().begin());
-
-                            if (availableBytes() >= *packet_size_address) {
-                                buffer_.consume(4);
-                                messages_.push_back(Message::fromBuffer(buffer_));
-                                return true;
-                            }
-                        }
+                        if(privateReadMessage())
+                            return true;
                     }
                 }
             } else {
                 return false;
             }
         }
+    }
+
+    uint32_t TCPSocket::getPendingMessageSize() const {
+        if(availableBytes() < 4)
+            return 4;
+
+        const uint32_t* packet_size_address = boost::asio::buffer_cast<const uint32_t*>(*buffer_.data().begin());
+        return *packet_size_address;
+    }
+
+    bool TCPSocket::privateReadMessage() {
+        uint32_t available = availableBytes();
+        if(available >= 4 && available >= getPendingMessageSize()) {
+            buffer_.consume(4);
+            messages_.push_back(Message::fromBuffer(buffer_));
+            return true;
+        }
+        return false;
     }
 }

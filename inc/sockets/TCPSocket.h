@@ -39,6 +39,9 @@ namespace Sockets {
     private:
         std::deque<std::shared_ptr<Message>> messages_;
         void createMessageHandler();
+
+        uint32_t getPendingMessageSize() const;
+        bool privateReadMessage();
     };
 }
 

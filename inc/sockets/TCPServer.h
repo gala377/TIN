@@ -35,7 +35,7 @@ namespace Sockets {
         bool listen(IP address, uint16_t server_port);
         bool listen(DNS address, uint16_t server_port);
 
-        bool waitForConnection(int ms);
+        bool waitForConnection(int secs);
 
         std::shared_ptr<TCPSocket> accept();
         uint16_t port() const;

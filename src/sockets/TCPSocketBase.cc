@@ -47,11 +47,7 @@ namespace Sockets {
 
     void TCPSocketBase::close() {
         if (socket_ >= 0) {
-            int status = socket_interface_->close(socket_);
-            if (status == -1) {
-                //TODO error handling
-                return;
-            }
+            socket_interface_->close(socket_);
             socket_ = -1;
             setState(SocketState::UNCONNECTED);
         }
@@ -62,7 +58,6 @@ namespace Sockets {
         port_ = port;
         struct sockaddr_in6 server = createAddress(address, port);
         if (socket_interface_->connect(socket_, (struct sockaddr *) &server, sizeof(server)) == -1) {
-            //std::cout << "Connect error " << strerror(socket_interface_->getErrno()) << "\n";
             switch (socket_interface_->getErrno()) {
                 case EISCONN:
                     setConnected();
@@ -141,12 +136,10 @@ namespace Sockets {
     }
 
     int TCPSocketBase::write(char *buffer, unsigned int size) {
-        //std::cout << "Write " << socket_ << "\n";
         if (size == 0)
             return 0;
         int status = socket_interface_->write(socket_, buffer, size);
         if (status == -1) {
-            //std::cout << "Write error " << strerror(socket_interface_->getErrno()) << "\n";
             switch (socket_interface_->getErrno()) {
                 case EPIPE:
                 case ECONNRESET:
@@ -164,7 +157,6 @@ namespace Sockets {
     int TCPSocketBase::privateRead(char *buffer, unsigned int size) {
         int status = socket_interface_->read(socket_, buffer, size);
         if (status == -1) {
-            //std::cout << strerror(socket_interface_->getErrno());
             switch (socket_interface_->getErrno()) {
                 case EAGAIN: //non-blocking - no data - return 0 without error
                     status = 0;
