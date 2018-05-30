@@ -44,6 +44,18 @@ namespace Sockets {
             return "Cannot initilize BSD socket";
         }
     };
+
+    struct SocketBindException : public std::exception {
+        const char *what() const throw() {
+            return "Cannot bind BSD socket";
+        }
+    };
+
+    struct SocketListenException : public std::exception {
+        const char *what() const throw() {
+            return "Cannot listen on BSD socket";
+        }
+    };
 }
 
 
