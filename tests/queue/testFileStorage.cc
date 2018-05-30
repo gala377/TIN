@@ -1,5 +1,5 @@
 //
-// Created by Martyna on 22.05.18.
+// Created by Martyna Kania on 22.05.18.
 //
 
 #include <gtest/gtest.h>

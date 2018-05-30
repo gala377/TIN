@@ -28,6 +28,7 @@ CommunicationModule::CommunicationModule(uint16_t port, std::string mess_dir_nam
             setMessId();
             prepareSocket();
             state_ = State::CONNECTED;
+            sleep(0.3);
             retransmitMessages();
         }
     });

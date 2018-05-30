@@ -237,6 +237,7 @@ namespace Sockets {
         fd_set.addWrite(socket_);
         struct timeval time;
         time.tv_sec = secs;
+        time.tv_usec = 0;
         socket_interface_->select(fd_set.getBiggestDescriptor()+1, NULL, fd_set.getWrite(), NULL, &time);
         if(time.tv_sec != 0 || time.tv_usec != 0) {
             return connect();

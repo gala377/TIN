@@ -69,7 +69,9 @@ namespace Sockets {
         fd_set.addRead(getDescriptor());
         struct timeval time;
         time.tv_sec = secs;
+        time.tv_usec = 0;
         while(true) {
+            std::cout << getDescriptor() << " " << time.tv_sec << " " << time.tv_usec << "\n";
             socket_interface_->select(fd_set.getBiggestDescriptor() + 1, fd_set.getRead(), NULL, NULL, &time);
             if (time.tv_sec != 0 || time.tv_usec != 0) {
                 if(fd_set.isSetRead(getDescriptor())) {
