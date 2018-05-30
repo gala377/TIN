@@ -10,12 +10,13 @@ CommunicationModule::CommunicationModule(uint16_t port, std::string mess_dir_nam
     server_.listen(port);
     supervisor_.add(&server_);
     server_.incomingConnection.connect([=]() {
-        // todo which messege id should we use?
         if (state_ == State::UNCONNECTED) {
             std::cout << "Connected now\n";
             socket_ = server_.accept();
+            setMessId();
             prepareSocket();
             state_ = State::CONNECTED;
+            retransmitMessages();
         } else if (state_ == State::CONNECTED) {
             std::cout << "New connection - refused\n";
             auto temp_socket = server_.accept();
@@ -23,6 +24,7 @@ CommunicationModule::CommunicationModule(uint16_t port, std::string mess_dir_nam
         } else if (state_ == State::DISCONNECTED) {
             std::cout << "New connection - accepted\n";
             socket_ = server_.accept();
+            setMessId();
             prepareSocket();
             state_ = State::CONNECTED;
             retransmitMessages();
@@ -45,6 +47,29 @@ void CommunicationModule::retransmitMessages() {
     for (auto it: queue_) {
         socket_->writeMessage(*it);
     }
+}
+
+void CommunicationModule::setMessId() {
+    std::cout << "Setting global mess id.\n";
+    auto next_id = queue_.lastAddedId()+1;
+    std::cout << "This next_id is " << next_id << "\nSending as ack.\n";
+    auto mess = std::make_shared<Acknowledge>(next_id);
+    socket_->writeMessage(*mess);
+    std::cout << "Send.\nWaiting 2 sec for response...";
+    socket_->waitForMessage(2);
+    auto resp = socket_->readMessage();
+    std::cout << "Read responce. Casting it to ACK.\n";
+    auto casted = std::dynamic_pointer_cast<Acknowledge>(resp);
+    if(casted == nullptr) {
+        throw std::runtime_error("Handshake not completed.");
+    }
+    std::cout << "Completed. Getting response id.\n";
+    auto resp_id = casted->getConsumedPacketId();
+    std::cout << "Other id is " << resp_id << "\n";
+    auto new_id = std::max(next_id, resp_id);
+    std::cout << "Chosen id is " << new_id << "\n"; 
+    Message::setGlobalId(new_id);
+    std::cout << "Global id set\n";
 }
 
 void CommunicationModule::prepareSocket() {
@@ -71,6 +96,7 @@ void CommunicationModule::prepareSocket() {
         state_ = State::DISCONNECTED;
     });
     supervisor_.add(socket_.get());
+    std::cout << "Prepared.\n";
 }
 
 CommunicationModule::~CommunicationModule() {
@@ -94,6 +120,7 @@ CommunicationModule CommunicationModule::createClient(uint16_t server_port,
     result.socket_ = std::make_shared<Sockets::TCPSocket>(&result.socket_facade_);
     result.socket_->connect(address, server_port);
     if (result.socket_->waitForConnected(30)) {
+        result.setMessId();
         result.prepareSocket();
         result.retransmitMessages();
     } else {

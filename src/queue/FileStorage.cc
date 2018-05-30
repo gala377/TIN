@@ -89,6 +89,9 @@ std::string FileStorage::padInt(int num) const {
 
 
 std::uint32_t FileStorage::lastAddedId() const {
+    if(!cachedFilesCount()) {
+        return 0;
+    }
     std::string last_mess_path = *(--_files.end());
     std::string last_mess_file_name = last_mess_path.substr(
             last_mess_path.find_last_of('/')+1);

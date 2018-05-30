@@ -43,6 +43,7 @@ private:
 
     void prepareSocket();
     void retransmitMessages();
+    void setMessId(); 
 
     Sockets::SocketUnix socket_facade_;
     Sockets::TCPServer server_;

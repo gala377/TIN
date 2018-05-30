@@ -59,4 +59,8 @@ std::shared_ptr<Message> Message::fromBuffer(boost::asio::streambuf& buffer) {
     return std::shared_ptr<Message>(result);
 }
 
+void Message::setGlobalId(uint32_t id) {
+    global_id = id;
+}
+
 uint32_t Message::global_id = 10;
