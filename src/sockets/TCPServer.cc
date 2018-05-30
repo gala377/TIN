@@ -75,8 +75,11 @@ namespace Sockets {
     std::shared_ptr<TCPSocket> TCPServer::accept() {
         struct sockaddr_in6 address;
         socklen_t lenght;
-        int status = socket_interface_->accept(socket_, (struct sockaddr *) &address, (socklen_t *) &lenght);
+        std::cout << socket_ << "\n";
+        //int status = socket_interface_->accept(socket_, (struct sockaddr *) &address, (socklen_t *) &lenght);
+        int status = socket_interface_->accept(socket_, NULL, NULL);
         if (status == -1) {
+            std::cout << strerror(socket_interface_->getErrno()) << "\n";
             switch (errno) {
                 case EBADF:
                 case EOPNOTSUPP:
@@ -128,6 +131,9 @@ namespace Sockets {
         timeout.tv_sec = secs;
         timeout.tv_usec = 0;
         int status = socket_interface_->select(fd_set.getBiggestDescriptor()+1, fd_set.getRead(), NULL, NULL, &timeout);
+        if(status == -1) {
+            std::cout << strerror(socket_interface_->getErrno()) << "\n";
+        }
         if (status == 0) {
             return false;
         } else if(status != -1){
