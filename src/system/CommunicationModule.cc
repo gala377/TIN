@@ -17,7 +17,6 @@ CommunicationModule::CommunicationModule(uint16_t port, std::string mess_dir_nam
             setMessId();
             prepareSocket();
             state_ = State::CONNECTED;
-            retransmitMessages();
         } else if (state_ == State::CONNECTED) {
             std::cout << "New connection - refused\n";
             auto temp_socket = server_.accept();

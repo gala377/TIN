@@ -317,7 +317,7 @@ TEST(CommunicationTest, AfterOtherReconnectResendYourUnconfirmedMessages) {
 }
 
 
-TEST(CommunicationTest, AfterBothReconnectResendUnconfirmedMessages) {
+TEST(CommunicationTest, WhenNewServerModuleIsCreatedDoNotRetransmitMessage) {
 
     boost::filesystem::remove_all(PATH);
     boost::filesystem::remove_all(PATH1);
@@ -332,16 +332,10 @@ TEST(CommunicationTest, AfterBothReconnectResendUnconfirmedMessages) {
 
     CommunicationModule server = CommunicationModule::createServer(PORT0);
     CommunicationModule client = CommunicationModule::createClient(PORT0, Sockets::IP({"::1"}), PORT1, PATH1);
-    sleep(1);//wait for resend
-
-    std::shared_ptr<Message> receivedMess1 = client.read();
-    auto *receivedTest = dynamic_cast<TestMess *>(receivedMess1.get());
-    client.acknowledge(receivedMess1.get());
     sleep(1);
 
-    ASSERT_EQ(messToSend->id_, receivedTest->id_);
-    ASSERT_EQ(messToSend->_data, receivedTest->_data);
-    ASSERT_EQ(0, server.getMessageInStorageCount());
+
+    ASSERT_THROW(client.read(), System::NoMessageToRead);
 
     delete messToSend;
     boost::filesystem::remove_all(PATH1);
@@ -460,30 +454,6 @@ TEST(CommunicationTest, WhenReceivedAckManyTimesRemoveOnlyOneMessage) {
     sleep(1);
 
     ASSERT_EQ(1, server.getMessageInStorageCount()); //queue is empty
-
-    delete mess1;
-    delete mess2;
-    boost::filesystem::remove_all(PATH0);
-    boost::filesystem::remove_all(PATH1);
-}
-
-TEST(CommunicationTest, WhenReceivedAckToUnknowMessageThrowException) {
-
-    boost::filesystem::remove_all(PATH0);
-    boost::filesystem::remove_all(PATH1);
-
-    TestMess *mess1 = new TestMess("sec");
-    TestMess *mess2 = new TestMess("sec");
-    CommunicationModule server = CommunicationModule::createServer(PORT0, PATH0);
-    CommunicationModule client = CommunicationModule::createClient(PORT0, Sockets::IP({"::1"}), PORT1, PATH1);
-    sleep(1);
-    server.send(mess1);
-
-    ASSERT_THROW(
-            client.acknowledge(mess2);//mess2 does not exist in server's storage
-            sleep(1);
-            ,System::UnknownMessageAcknowledge
-    );
 
     delete mess1;
     delete mess2;
